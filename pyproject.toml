@@ -1,0 +1,13 @@
+[project]
+name = "dev-peace"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "inquirerpy>=0.3.4",
+    "jira>=3.10.5",
+    "pygit2>=1.18.1",
+    "pysqlite3>=0.5.4",
+    "watchdog>=6.0.0",
+]
