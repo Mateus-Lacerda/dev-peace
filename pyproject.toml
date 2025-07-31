@@ -1,13 +1,38 @@
 [project]
 name = "dev-peace"
 version = "0.1.0"
-description = "Add your description here"
+description = "Observador inteligente de desenvolvimento que gera worklogs automaticamente no Jira"
 readme = "README.md"
 requires-python = ">=3.12"
+authors = [
+    {name = "Mateus Lacerda", email = "mateuslacerda253@gmail.com"}
+]
+keywords = ["jira", "worklog", "git", "development", "automation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "inquirerpy>=0.3.4",
     "jira>=3.10.5",
     "pygit2>=1.18.1",
-    "pysqlite3>=0.5.4",
     "watchdog>=6.0.0",
 ]
+
+[project.scripts]
+dev-peace = "dev_peace.cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/Mateus-Lacerda/dev-peace"
+Repository = "https://github.com/Mateus-Lacerda/dev-peace"
+Issues = "https://github.com/Mateus-Lacerda/dev-peace/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dev_peace"]

@@ -91,12 +91,11 @@ wheels = [
 [[package]]
 name = "dev-peace"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "inquirerpy" },
     { name = "jira" },
     { name = "pygit2" },
-    { name = "pysqlite3" },
     { name = "watchdog" },
 ]
 
@@ -105,7 +104,6 @@ requires-dist = [
     { name = "inquirerpy", specifier = ">=0.3.4" },
     { name = "jira", specifier = ">=3.10.5" },
     { name = "pygit2", specifier = ">=1.18.1" },
-    { name = "pysqlite3", specifier = ">=0.5.4" },
     { name = "watchdog", specifier = ">=6.0.0" },
 ]
 
@@ -220,12 +218,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/6c/02/0e44650133ec5cd650e161de303af653d8e278f88993fa709ec073533b18/pygit2-1.18.1-cp313-cp313-win32.whl", hash = "sha256:99eb8a7aa40142d0779779fdb53ca7439b5913c114df4e2550c5a7cfc2123181", size = 1228617, upload-time = "2025-07-26T11:14:03.225Z" },
     { url = "https://files.pythonhosted.org/packages/05/d6/2232f3634de4d22834dd3148159045398c0d5b2b12e2a8aae2c1b795b1a6/pygit2-1.18.1-cp313-cp313-win_amd64.whl", hash = "sha256:1fdec95cb13f95ba0c83b24f33861e3a8eca502acfadadd2f8c1dc26450d79c4", size = 1314359, upload-time = "2025-07-26T11:18:36.783Z" },
 ]
-
-[[package]]
-name = "pysqlite3"
-version = "0.5.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/33/cb/ef7d041dbecfbf47f9241d7cb6328311fd80fe15bd61a6253d9ab36e9d6d/pysqlite3-0.5.4.tar.gz", hash = "sha256:fbc69bfdc0cb43a5badd5403b126d5151371b5037e0397ba9802bb440c5b0021", size = 40743, upload-time = "2024-10-12T12:11:55.537Z" }
 
 [[package]]
 name = "requests"

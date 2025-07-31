@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Peace - Documentação</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn.active {
+            background: #764ba2;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #764ba2;
+            margin: 30px 0 15px 0;
+            font-size: 1.4rem;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            overflow-x: auto;
+        }
+
+        .command {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+
+        .command::before {
+            content: "$ ";
+            color: #68d391;
+            font-weight: bold;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .feature-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background: #48bb78;
+        }
+
+        .status-inactive {
+            background: #f56565;
+        }
+
+        .status-warning {
+            background: #ed8936;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .nav {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕊️ Dev Peace</h1>
+            <p>Observador inteligente de desenvolvimento com integração Jira</p>
+        </div>
+
+        <div class="content">
+            <nav class="nav">
+                <button class="nav-btn active" onclick="showSection('overview')">Visão Geral</button>
+                <button class="nav-btn" onclick="showSection('install')">Instalação</button>
+                <button class="nav-btn" onclick="showSection('config')">Configuração</button>
+                <button class="nav-btn" onclick="showSection('usage')">Uso</button>
+                <button class="nav-btn" onclick="showSection('commands')">Comandos</button>
+            </nav>
+
+            <!-- Visão Geral -->
+            <section id="overview" class="section active">
+                <h2>🎯 Visão Geral</h2>
+                <p>O Dev Peace é um observador inteligente que monitora sua atividade de desenvolvimento e automatiza
+                    tarefas no Jira.</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>🔍 Detecção Automática</h4>
+                        <p>Detecta quando você entra em repositórios Git e identifica issues do Jira automaticamente</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🤖 Automação de Status</h4>
+                        <p>Muda status das issues no Jira baseado em suas ações de desenvolvimento</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎨 Interface Interativa</h4>
+                        <p>Configure tudo através de uma interface visual intuitiva</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🚀 Serviço em Background</h4>
+                        <p>Roda como serviço systemd, monitorando continuamente</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Instalação -->
+            <section id="install" class="section">
+                <h2>📦 Instalação</h2>
+
+                <h3>1. Instalar o Pacote</h3>
+                <div class="command">pip install -e .</div>
+
+                <h3>2. Instalar como Serviço</h3>
+                <div class="command">./scripts/install-service.sh</div>
+
+                <h3>3. Instalar Comando Global</h3>
+                <div class="command">./scripts/install-global.sh</div>
+
+                <h3>4. Iniciar Serviço</h3>
+                <div class="command">systemctl --user start dev-peace</div>
+                <div class="command">systemctl --user enable dev-peace</div>
+            </section>
+
+            <!-- Configuração -->
+            <section id="config" class="section">
+                <h2>⚙️ Configuração</h2>
+
+                <h3>🔗 Configurar Jira</h3>
+                <div class="command">dev-peace config --jira-url "https://empresa.atlassian.net"</div>
+                <div class="command">dev-peace config --jira-user "seu@email.com"</div>
+                <div class="command">dev-peace config --jira-token "seu-token-api"</div>
+
+                <h3>🧪 Testar Conexão</h3>
+                <div class="command">dev-peace config --test-jira</div>
+
+                <h3>🤖 Configurar Automação</h3>
+                <p>Use a interface interativa para configurar automação baseada nos status reais do seu Jira:</p>
+                <div class="command">dev-peace interactive</div>
+                <p>Navegue para: <strong>Integração Jira → Configurar automação de status → Configurar baseado no
+                        Jira</strong></p>
+
+                <h3>📁 Adicionar Repositórios</h3>
+                <div class="command">dev-peace add /caminho/para/repositorio</div>
+            </section>
+
+            <!-- Uso -->
+            <section id="usage" class="section">
+                <h2>🚀 Como Usar</h2>
+
+                <h3>🎨 Interface Interativa</h3>
+                <p>A forma mais fácil de usar o Dev Peace:</p>
+                <div class="command">dev-peace interactive</div>
+
+                <h3>🔍 Descobrir Status do Jira</h3>
+                <div class="command">dev-peace jira-status projects</div>
+                <div class="command">dev-peace jira-status list PROJETO</div>
+                <div class="command">dev-peace jira-status workflow ISSUE-123</div>
+
+                <h3>⚡ Configuração Automática</h3>
+                <div class="command">dev-peace automation configure --project PROJETO --apply</div>
+                <div class="command">dev-peace automation configure --issue ISSUE-123 --apply</div>
+
+                <h3>📊 Monitoramento</h3>
+                <div class="command">journalctl --user -u dev-peace -f</div>
+            </section>
+
+            <!-- Comandos -->
+            <section id="commands" class="section">
+                <h2>📋 Comandos Principais</h2>
+
+                <h3>🔧 Gerenciamento</h3>
+                <div class="code-block">
+                    dev-peace status # Ver status atual <br>
+                    dev-peace interactive # Interface interativa <br>
+                    dev-peace list # Listar repositórios monitorados <br>
+                    dev-peace add &lt;path&gt; # Adicionar repositório para monitoramento <br>
+                    dev-peace remove &lt;path&gt; # Remover repositório de monitoramento
+                </div>
+
+                <h3>🤖 Automação</h3>
+                <div class="code-block">
+                    dev-peace automation show # Ver regras atuais <br>
+                    dev-peace automation enable # Habilitar automação geral <br>
+                    dev-peace automation disable # Desabilitar automação geral <br>
+                    dev-peace automation reset # Resetar para padrões
+                </div>
+
+                <h3>🔗 Jira</h3>
+                <div class="code-block">
+                    dev-peace jira-status projects # Listar projetos acessíveis <br>
+                    dev-peace jira-status list &lt;projeto&gt; # Status do projeto <br>
+                    dev-peace jira-status workflow &lt;issue&gt; # Workflow da issue <br>
+                    dev-peace status-issue &lt;issue&gt; &lt;status&gt; # Mudar status manualmente
+                </div>
+
+                <h3>🚀 Serviço</h3>
+                <div class="code-block">
+                    systemctl --user status dev-peace # Status do serviço <br>
+                    systemctl --user start dev-peace # Iniciar serviço <br>
+                    systemctl --user stop dev-peace # Parar serviço <br>
+                    systemctl --user restart dev-peace # Reiniciar serviço <br>
+                    journalctl --user -u dev-peace -f # Ver logs em tempo real
+                </div>
+            </section>
+        </div>
+
+        <div class="footer">
+            <p>🕊️ Que a paz esteja com seu código! ✨</p>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>
