@@ -666,7 +666,6 @@ Que a paz esteja com seu código! 🧘‍♂️
             print(f"{status} {rule_name.replace('_', ' ').title()}")
             print(f"   De: {rule_config.get('from_status', [])}")
             print(f"   Para: {rule_config.get('to_status', 'N/A')}")
-            print(f"   Comentário: {rule_config.get('comment', 'N/A')}")
             print()
 
         return 0
