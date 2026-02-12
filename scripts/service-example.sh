@@ -15,7 +15,8 @@ echo "=================================================="
 echo
 
 echo -e "${YELLOW}1. Instalando o serviço...${NC}"
-./scripts/install-service.sh
+echo "Use o Makefile para instalar o serviço correto para seu OS:"
+echo "make service"
 
 echo
 echo -e "${YELLOW}2. Configurando Jira (exemplo)...${NC}"
@@ -41,15 +42,18 @@ echo "dev-peace automation enable on_work_start"
 
 echo
 echo -e "${YELLOW}5. Iniciando o serviço...${NC}"
-echo "systemctl --user start dev-peace"
+echo "No Linux (systemd):   systemctl --user start dev-peace"
+echo "No macOS (launchd):   launchctl load ~/Library/LaunchAgents/com.devpeace.daemon.plist"
 
 echo
-echo -e "${YELLOW}6. Verificando status...${NC}"
-echo "systemctl --user status dev-peace"
+echo -e "${YELLOW}6. Verificando status do serviço...${NC}"
+echo "No Linux (systemd):   systemctl --user status dev-peace"
+echo "No macOS (launchd):   launchctl list | grep devpeace"
 
 echo
 echo -e "${YELLOW}7. Visualizando logs...${NC}"
-echo "journalctl --user -u dev-peace -f"
+echo "No Linux (systemd):   journalctl --user -u dev-peace -f"
+echo "No macOS (launchd):   tail -f ~/Library/Logs/dev-peace/stdout.log"
 
 echo
 echo -e "${YELLOW}8. Comandos úteis durante o uso...${NC}"
@@ -67,7 +71,8 @@ echo "dev-peace interactive"
 
 echo
 echo -e "${YELLOW}9. Parando o serviço...${NC}"
-echo "systemctl --user stop dev-peace"
+echo "No Linux (systemd):   systemctl --user stop dev-peace"
+echo "No macOS (launchd):   launchctl unload ~/Library/LaunchAgents/com.devpeace.daemon.plist"
 
 echo
 echo -e "${GREEN}✅ Exemplo completo!${NC}"
@@ -80,4 +85,5 @@ echo "4. Inicie o serviço"
 echo "5. Trabalhe normalmente - Dev Peace cuida do resto!"
 echo
 echo -e "${BLUE}🔍 Para debug:${NC}"
-echo "journalctl --user -u dev-peace --since '1 hour ago'"
+echo "No Linux: journalctl --user -u dev-peace --since '1 hour ago'"
+echo "No macOS: tail -n 100 ~/Library/Logs/dev-peace/stdout.log"

@@ -26,7 +26,19 @@ log_error() {
 
 # Detecta o diretório atual do projeto
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VENV_EXECUTABLE="$CURRENT_DIR/venv/bin/dev-peace"
+
+# Detecta o ambiente virtual (tenta .venv primeiro, depois venv)
+if [ -d "$CURRENT_DIR/.venv" ]; then
+    VENV_PATH="$CURRENT_DIR/.venv"
+elif [ -d "$CURRENT_DIR/venv" ]; then
+    VENV_PATH="$CURRENT_DIR/venv"
+else
+    log_error "Nenhum ambiente virtual encontrado em $CURRENT_DIR"
+    log_info "Execute primeiro: uv venv (ou python -m venv venv) && pip install -e ."
+    exit 1
+fi
+
+VENV_EXECUTABLE="$VENV_PATH/bin/dev-peace"
 LOCAL_BIN="$HOME/.local/bin"
 GLOBAL_EXECUTABLE="$LOCAL_BIN/dev-peace"
 

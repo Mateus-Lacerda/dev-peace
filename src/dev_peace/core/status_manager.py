@@ -24,23 +24,11 @@ class StatusManager:
         """Carrega regras de mudança de status da configuração."""
         return self.config.get_setting('status_automation', {
             'enabled': False,
-            'auto_revert_on_session_end': False,  # Reverte status automaticamente quando sessão é finalizada
-            'rules': {
-                'on_work_start': {
-                    'enabled': True,
-                    'from_status': ['To Do', 'Open', 'Backlog'],
-                    'to_status': 'In Progress',
-                },
-                'on_first_commit': {
-                    'enabled': False,
-                    'from_status': ['To Do', 'Open', 'Backlog'],
-                    'to_status': 'In Progress',
-                },
-                'on_work_complete': {
-                    'enabled': False,
-                    'from_status': ['In Progress'],
-                    'to_status': 'Done',
-                }
+            'auto_revert_on_session_end': False,
+            'events': {
+                'on_work_start': [],      # Lista de {"from": "Status A", "to": "Status B"}
+                'on_first_commit': [],
+                'on_work_complete': []
             }
         })
     
@@ -59,78 +47,63 @@ class StatusManager:
     
     def on_work_start(self, issue_key: str) -> bool:
         """Executa ação quando trabalho é iniciado em uma issue."""
-        if not self.is_enabled() or not self.jira_client:
-            return False
-        
-        rule = self.status_rules.get('rules', {}).get('on_work_start', {})
-        if not rule.get('enabled', False):
-            return False
-        
-        return self._apply_status_rule(issue_key, rule, 'work_start')
+        return self._process_event(issue_key, 'on_work_start')
     
     def on_first_commit(self, issue_key: str, commit_message: str) -> bool:
         """Executa ação no primeiro commit de uma issue."""
-        if not self.is_enabled() or not self.jira_client:
-            return False
-        
-        rule = self.status_rules.get('rules', {}).get('on_first_commit', {})
-        if not rule.get('enabled', False):
-            return False
-        
-        # Substitui placeholder na mensagem
-        rule = rule.copy()
-        if 'comment' in rule:
-            rule['comment'] = rule['comment'].format(commit_message=commit_message)
-        
-        return self._apply_status_rule(issue_key, rule, 'first_commit')
+        # Nota: O parâmetro commit_message pode ser usado futuramente para comentários
+        return self._process_event(issue_key, 'on_first_commit')
     
     def on_work_complete(self, issue_key: str) -> bool:
         """Executa ação quando trabalho é finalizado."""
+        return self._process_event(issue_key, 'on_work_complete')
+
+    def _process_event(self, issue_key: str, event_name: str) -> bool:
+        """Processa um evento buscando a regra de transição correspondente ao status atual."""
         if not self.is_enabled() or not self.jira_client:
             return False
         
-        rule = self.status_rules.get('rules', {}).get('on_work_complete', {})
-        if not rule.get('enabled', False):
+        event_rules = self.status_rules.get('events', {}).get(event_name, [])
+        if not event_rules:
             return False
-        
-        return self._apply_status_rule(issue_key, rule, 'work_complete')
-    
-    def _apply_status_rule(self, issue_key: str, rule: Dict[str, Any], event_type: str) -> bool:
-        """Aplica uma regra de mudança de status."""
+
         try:
-            # Busca informações da issue
+            # Busca status atual QUENTE no Jira
             issue_info = self.jira_client.get_issue(issue_key)
             if not issue_info:
-                logger.warning(f"Issue {issue_key} não encontrada para evento {event_type}")
+                logger.warning(f"Issue {issue_key} não encontrada para evento {event_name}")
                 return False
 
             current_status = issue_info['status']
-            from_statuses = rule.get('from_status', [])
-            to_status = rule.get('to_status')
+            
+            # Procura uma regra que combine com o status atual
+            target_status = None
+            for rule in event_rules:
+                # 'from' pode ser uma string simples ou uma lista para facilitar
+                from_val = rule.get('from')
+                if isinstance(from_val, list):
+                    if current_status in from_val:
+                        target_status = rule.get('to')
+                        break
+                elif current_status == from_val:
+                    target_status = rule.get('to')
+                    break
 
-            # Verifica se o status atual permite a transição
-            if from_statuses and current_status not in from_statuses:
-                logger.debug(f"Status atual '{current_status}' não está na lista permitida {from_statuses}")
-                return False
-
-            if not to_status:
-                logger.error(f"Status de destino não definido na regra {event_type}")
+            if not target_status:
+                logger.debug(f"Nenhuma regra de transição encontrada para o status atual '{current_status}' da issue {issue_key} no evento {event_name}")
                 return False
 
             # Executa a transição
-            logger.info(f"Aplicando regra {event_type}: {issue_key} {current_status} → {to_status}")
-
-            success = self.jira_client.transition_issue(issue_key, to_status)
+            logger.info(f"Evento {event_name}: {issue_key} [{current_status}] -> [{target_status}]")
+            success = self.jira_client.transition_issue(issue_key, target_status)
 
             if success:
-                logger.info(f"Status da issue {issue_key} alterado automaticamente para '{to_status}'")
-            else:
-                logger.warning(f"Falha ao alterar status da issue {issue_key} para '{to_status}'")
-
+                logger.info(f"Status da issue {issue_key} alterado para '{target_status}'")
+            
             return success
 
         except Exception as e:
-            logger.error(f"Erro ao aplicar regra de status {event_type} para {issue_key}: {e}")
+            logger.error(f"Erro ao processar evento {event_name} para {issue_key}: {e}")
             return False
 
     def on_session_end(self, issue_key: str, original_status: str) -> bool:
@@ -208,25 +181,15 @@ class StatusManager:
         """Retorna regras padrão de automação de status."""
         return {
             'enabled': False,
-            'rules': {
-                'on_work_start': {
-                    'enabled': True,
-                    'from_status': ['To Do', 'Open', 'Backlog', 'New'],
-                    'to_status': 'In Progress',
-                    'comment': 'Trabalho iniciado automaticamente pelo Dev Peace'
-                },
-                'on_first_commit': {
-                    'enabled': False,
-                    'from_status': ['To Do', 'Open', 'Backlog', 'New'],
-                    'to_status': 'In Progress',
-                    'comment': 'Primeiro commit realizado: {commit_message}'
-                },
-                'on_work_complete': {
-                    'enabled': False,
-                    'from_status': ['In Progress', 'In Review'],
-                    'to_status': 'Done',
-                    'comment': 'Trabalho finalizado automaticamente pelo Dev Peace'
-                }
+            'auto_revert_on_session_end': False,
+            'events': {
+                'on_work_start': [
+                    {'from': ['To Do', 'Open', 'Backlog', 'New', 'A FAZER'], 'to': 'In Progress'}
+                ],
+                'on_first_commit': [],
+                'on_work_complete': [
+                    {'from': ['In Progress', 'In Review', 'Fazendo'], 'to': 'Done'}
+                ]
             }
         }
     

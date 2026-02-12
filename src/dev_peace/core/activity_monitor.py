@@ -98,10 +98,6 @@ class DevPeaceActivityMonitor:
             repositories = self.db.get_all_repositories()
             paths = [repo.path for repo in repositories if repo.is_active]
         
-        if not paths:
-            logger.warning("Nenhum repositório para monitorar")
-            return
-        
         # Configura monitoramento para cada caminho
         for path in paths:
             try:
@@ -110,6 +106,9 @@ class DevPeaceActivityMonitor:
                 logger.info(f"Monitorando: {path}")
             except Exception as e:
                 logger.error(f"Erro ao configurar monitoramento para {path}: {e}")
+        
+        if not paths:
+            logger.info("Nenhum repositório configurado no momento. Aguardando novos repositórios...")
         
         # Inicia o observador
         self.observer.start()
@@ -135,6 +134,25 @@ class DevPeaceActivityMonitor:
         self.monitored_paths.clear()
 
         logger.info("Monitor de atividades parado")
+
+    def refresh_repositories(self):
+        """Atualiza a lista de repositórios monitorados a partir do banco de dados."""
+        if not self.is_running:
+            return
+
+        repositories = self.db.get_all_repositories()
+        active_paths = [repo.path for repo in repositories if repo.is_active]
+
+        # Encontra novos caminhos para monitorar
+        new_paths = [p for p in active_paths if p not in self.monitored_paths]
+        
+        for path in new_paths:
+            try:
+                self.observer.schedule(self.git_monitor, path, recursive=True)
+                self.monitored_paths.append(path)
+                logger.info(f"Novo repositório detectado e monitorado: {path}")
+            except Exception as e:
+                logger.error(f"Erro ao configurar monitoramento para novo caminho {path}: {e}")
     
     def _handle_repository_entry(self, repo_path: str, repo_name: str, branch_name: str, jira_issue: Optional[str]):
         """Processa entrada em repositório Git."""
