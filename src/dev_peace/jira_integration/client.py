@@ -274,59 +274,22 @@ class JiraClient:
             logger.error(f"Erro inesperado ao buscar transições: {e}")
             return []
 
-    def get_project_statuses(self, project_key: str) -> List[Dict[str, Any]]:
-        """Obtém todos os status disponíveis em um projeto."""
+    def get_project_statuses(self, project_key: str) -> List[str]:
+        """Obtém todos os nomes de status únicos disponíveis."""
         if not self.is_connected():
             logger.error("Cliente Jira não está conectado")
             return []
 
         try:
-            # Busca o projeto
-            project = self._client.project(project_key)
+            # Na versão 3.10.x da lib jira, usamos o método statuses() global
+            # Se quisermos filtrar por projeto, precisaríamos de transições de issues reais,
+            # mas por simplicidade e robustez, vamos retornar os status globais que 
+            # costumam cobrir o que o usuário precisa.
+            all_statuses = self._client.statuses()
+            return sorted(list(set(s.name for s in all_statuses)))
 
-            # Obtém tipos de issue do projeto
-            issue_types = project.issueTypes
-
-            # Coleta todos os status únicos
-            all_statuses = set()
-
-            for issue_type in issue_types:
-                # Para cada tipo de issue, busca os status do workflow
-                try:
-                    # Busca uma issue exemplo deste tipo para ver transições
-                    jql = f"project = {project_key} AND issuetype = '{issue_type.name}'"
-                    issues = self._client.search_issues(jql, maxResults=1)
-
-                    if issues:
-                        transitions = self._client.transitions(issues[0])
-                        for transition in transitions:
-                            all_statuses.add(transition['to']['name'])
-
-                        # Adiciona status atual da issue
-                        all_statuses.add(issues[0].fields.status.name)
-
-                except Exception as e:
-                    logger.debug(f"Erro ao buscar status para tipo {issue_type.name}: {e}")
-                    continue
-
-            # Se não conseguiu pelos workflows, tenta buscar status globais
-            if not all_statuses:
-                try:
-                    statuses = self._client.statuses()
-                    all_statuses = {status.name for status in statuses}
-                except Exception as e:
-                    logger.error(f"Erro ao buscar status globais: {e}")
-
-            # Converte para lista ordenada
-            status_list = sorted(list(all_statuses))
-
-            return [{'name': status, 'id': status} for status in status_list]
-
-        except JIRAError as e:
-            logger.error(f"Erro ao buscar status do projeto {project_key}: {e}")
-            return []
         except Exception as e:
-            logger.error(f"Erro inesperado ao buscar status: {e}")
+            logger.error(f"Erro ao buscar status do Jira: {e}")
             return []
 
     def get_issue_workflow_statuses(self, issue_key: str) -> Dict[str, Any]:
@@ -388,6 +351,18 @@ class JiraClient:
             return []
         except Exception as e:
             logger.error(f"Erro inesperado ao buscar projetos: {e}")
+            return []
+
+    def get_all_statuses(self) -> List[str]:
+        """Obtém todos os nomes de status únicos disponíveis no servidor Jira."""
+        if not self.is_connected():
+            return []
+        
+        try:
+            all_statuses = self._client.statuses()
+            return sorted(list(set(s.name for s in all_statuses)))
+        except Exception as e:
+            logger.error(f"Erro ao buscar status globais do Jira: {e}")
             return []
 
     @staticmethod

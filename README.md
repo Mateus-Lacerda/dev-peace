@@ -25,8 +25,15 @@ Ele observa silenciosamente seus repositórios, detecta quando você entra neles
 git clone https://github.com/Mateus-Lacerda/dev-peace.git
 cd dev-peace
 
-# Instale as dependências
-pip install -e .
+# Instale usando o Makefile (recomendado)
+make install
+
+# Instale o comando globalmente (opcional)
+make install-global
+
+# Instale como serviço (daemon) para rodar sempre em background
+# Detecta automaticamente se é Linux (systemd) ou macOS (launchd)
+make service
 ```
 
 ## 🎯 Como usar

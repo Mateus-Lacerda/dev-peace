@@ -173,6 +173,12 @@ Que a paz esteja com seu código!
             help='Estatísticas detalhadas (para os nerds)'
         )
 
+        # Comando logs
+        subparsers.add_parser(
+            'logs',
+            help='Mostra os logs do serviço em tempo real'
+        )
+
         # Comando daemon
         daemon_parser = subparsers.add_parser(
             'daemon',
@@ -530,6 +536,56 @@ Que a paz esteja com seu código!
         print("Estatísticas detalhadas em breve...")
         return 0
 
+    def handle_logs(self, args):
+        """Mostra os logs do serviço."""
+        import platform
+        import os
+        from pathlib import Path
+
+        system = platform.system()
+        
+        if system == "Darwin":  # macOS
+            log_file = Path.home() / "Library/Logs/dev-peace/stdout.log"
+            if not log_file.exists():
+                print(f"❌ Arquivo de log não encontrado: {log_file}")
+                print("O serviço está rodando? Use 'make service' para instalar.")
+                return 1
+            
+            print(f"📋 Seguindo logs em: {log_file}")
+            print("Pressione Ctrl+C para sair\n")
+            os.system(f"tail -f {log_file}")
+        else:  # Linux (assume systemd)
+            print("📋 Seguindo logs via journalctl...")
+            print("Pressione Ctrl+C para sair\n")
+            os.system("journalctl --user -u dev-peace -f")
+        
+        return 0
+
+    def handle_logs(self, args):
+        """Mostra os logs do serviço."""
+        import platform
+        import os
+        from pathlib import Path
+
+        system = platform.system()
+        
+        if system == "Darwin":  # macOS
+            log_file = Path.home() / "Library/Logs/dev-peace/stdout.log"
+            if not log_file.exists():
+                print(f"❌ Arquivo de log não encontrado: {log_file}")
+                print("O serviço está rodando? Use 'make service' para instalar.")
+                return 1
+            
+            print(f"📋 Seguindo logs em: {log_file}")
+            print("Pressione Ctrl+C para sair\n")
+            os.system(f"tail -f {log_file}")
+        else:  # Linux (assume systemd)
+            print("📋 Seguindo logs via journalctl...")
+            print("Pressione Ctrl+C para sair\n")
+            os.system("journalctl --user -u dev-peace -f")
+        
+        return 0
+
     def handle_daemon(self, args):
         """Executa como daemon."""
         import signal
@@ -570,9 +626,16 @@ Que a paz esteja com seu código!
             logger.info("Monitoramento iniciado em modo daemon")
 
             # Loop principal do daemon
+            counter = 0
             while self.monitor.is_running:
                 import time
                 time.sleep(1)
+                counter += 1
+                
+                # A cada 30 segundos, verifica se há novos repositórios no banco
+                if counter >= 30:
+                    self.monitor.refresh_repositories()
+                    counter = 0
 
         except Exception as e:
             logger.error(f"Erro no daemon: {e}")
@@ -670,28 +733,30 @@ Que a paz esteja com seu código!
             print("   Status será revertido automaticamente quando sessão for finalizada")
         print()
 
-        for rule_name, rule_config in rules.get('rules', {}).items():
-            status = "[Ativo]" if rule_config.get('enabled') else "[Inativo]"
-            print(f"{status} {rule_name.replace('_', ' ').title()}")
-            print(f"   De: {rule_config.get('from_status', [])}")
-            print(f"   Para: {rule_config.get('to_status', 'N/A')}")
+        events = rules.get('events', {})
+        for event_name, transitions in events.items():
+            title = event_name.replace('on_', '').replace('_', ' ').title()
+            print(f"🔔 {title}:")
+            if not transitions:
+                print("   (Nenhuma regra configurada)")
+            else:
+                for i, trans in enumerate(transitions, 1):
+                    from_val = trans.get('from')
+                    to_val = trans.get('to')
+                    print(f"   {i}. {from_val} ➡️  {to_val}")
             print()
 
         return 0
 
-    def _enable_automation_rule(self, status_manager, rule_name):
-        """Habilita regra de automação."""
+    def _enable_automation_rule(self, status_manager, event_name):
+        """Habilita automação (comando simplificado para habilitar geral ou evento)."""
         rules = status_manager.status_rules.copy()
 
-        if rule_name:
-            # Habilita regra específica
-            if rule_name in rules.get('rules', {}):
-                rules['rules'][rule_name]['enabled'] = True
-                status_manager.save_status_rules(rules)
-                print(f"Regra '{rule_name}' habilitada")
-            else:
-                print(f"Regra '{rule_name}' não encontrada")
-                return 1
+        if event_name:
+            # No novo formato, a "habilitação" de um evento é ter regras nele.
+            # Este comando CLI agora serve apenas para habilitar a automação GERAL.
+            print(f"💡 Para gerenciar regras de '{event_name}', use 'dev-peace interactive'")
+            return 1
         else:
             # Habilita automação geral
             rules['enabled'] = True
@@ -700,19 +765,13 @@ Que a paz esteja com seu código!
 
         return 0
 
-    def _disable_automation_rule(self, status_manager, rule_name):
-        """Desabilita regra de automação."""
+    def _disable_automation_rule(self, status_manager, event_name):
+        """Desabilita automação."""
         rules = status_manager.status_rules.copy()
 
-        if rule_name:
-            # Desabilita regra específica
-            if rule_name in rules.get('rules', {}):
-                rules['rules'][rule_name]['enabled'] = False
-                status_manager.save_status_rules(rules)
-                print(f"Regra '{rule_name}' desabilitada")
-            else:
-                print(f"Regra '{rule_name}' não encontrada")
-                return 1
+        if event_name:
+            print(f"💡 Para gerenciar regras de '{event_name}', use 'dev-peace interactive'")
+            return 1
         else:
             # Desabilita automação geral
             rules['enabled'] = False
@@ -1029,6 +1088,7 @@ Que a paz esteja com seu código!
             'interactive': self.handle_interactive,
             'docs': self.handle_docs,
             'stats': self.handle_stats,
+            'logs': self.handle_logs,
             'daemon': self.handle_daemon,
             'status-issue': self.handle_status_issue,
             'automation': self.handle_automation,

@@ -40,24 +40,30 @@ fi
 USER=$(whoami)
 HOME_DIR=$(eval echo ~$USER)
 CURRENT_DIR=$(pwd)
-VENV_PATH="$CURRENT_DIR/venv"
+
+# Detecta o ambiente virtual (tenta .venv primeiro, depois venv)
+if [ -d "$CURRENT_DIR/.venv" ]; then
+    VENV_PATH="$CURRENT_DIR/.venv"
+    log_info "Ambiente virtual detectado em: .venv"
+elif [ -d "$CURRENT_DIR/venv" ]; then
+    VENV_PATH="$CURRENT_DIR/venv"
+    log_info "Ambiente virtual detectado em: venv"
+else
+    log_error "Nenhum ambiente virtual encontrado em $CURRENT_DIR"
+    log_info "Execute primeiro: uv venv (ou python -m venv venv) && pip install -e ."
+    exit 1
+fi
+
 DEV_PEACE_EXEC="$VENV_PATH/bin/dev-peace"
 
 log_info "🕊️  Instalando Dev Peace como serviço systemd..."
 log_info "Usuário: $USER"
 log_info "Diretório: $CURRENT_DIR"
 
-# Verifica se o ambiente virtual existe
-if [ ! -d "$VENV_PATH" ]; then
-    log_error "Ambiente virtual não encontrado em $VENV_PATH"
-    log_info "Execute primeiro: python -m venv venv && source venv/bin/activate && pip install -e ."
-    exit 1
-fi
-
 # Verifica se o dev-peace está instalado
 if [ ! -f "$DEV_PEACE_EXEC" ]; then
     log_error "Dev Peace não encontrado em $DEV_PEACE_EXEC"
-    log_info "Execute primeiro: source venv/bin/activate && pip install -e ."
+    log_info "Execute primeiro: pip install -e ."
     exit 1
 fi
 

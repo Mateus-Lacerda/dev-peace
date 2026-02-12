@@ -713,13 +713,23 @@ class InteractiveInterface:
         print("\nRegras de Automação de Status")
         print("=" * 40)
         print(f"Status geral: {'[Habilitado]' if rules.get('enabled') else '[Desabilitado]'}")
+        
+        # Mostra configuração de reversão automática
+        auto_revert = rules.get('auto_revert_on_session_end', False)
+        print(f"Reversão automática: {'🟢 Habilitada' if auto_revert else '🔴 Desabilitada'}")
         print()
 
-        for rule_name, rule_config in rules.get('rules', {}).items():
-            status = "[Ativo]" if rule_config.get('enabled') else "[Inativo]"
-            print(f"{status} {rule_name.replace('_', ' ').title()}")
-            print(f"   De: {rule_config.get('from_status', [])}")
-            print(f"   Para: {rule_config.get('to_status', 'N/A')}")
+        events = rules.get('events', {})
+        for event_name, transitions in events.items():
+            title = event_name.replace('on_', '').replace('_', ' ').title()
+            print(f"🔔 {title}:")
+            if not transitions:
+                print("   (Nenhuma regra configurada)")
+            else:
+                for i, trans in enumerate(transitions, 1):
+                    from_val = trans.get('from')
+                    to_val = trans.get('to')
+                    print(f"   {i}. {from_val} ➡️  {to_val}")
             print()
 
         input("Pressione Enter para continuar...")
@@ -892,16 +902,20 @@ class InteractiveInterface:
     def _apply_automatic_config(self, status_manager, found_statuses):
         """Aplica configuração automática."""
         rules = status_manager.status_rules.copy()
+        if 'events' not in rules:
+            rules['events'] = {'on_work_start': [], 'on_first_commit': [], 'on_work_complete': []}
 
         if 'todo' in found_statuses and 'in_progress' in found_statuses:
-            rules['rules']['on_work_start']['from_status'] = [found_statuses['todo']]
-            rules['rules']['on_work_start']['to_status'] = found_statuses['in_progress']
-            print(f"Configurado início: {found_statuses['todo']} -> {found_statuses['in_progress']}")
+            rules['events']['on_work_start'] = [
+                {'from': found_statuses['todo'], 'to': found_statuses['in_progress']}
+            ]
+            print(f"✅ Configurado início: {found_statuses['todo']} ➡️  {found_statuses['in_progress']}")
 
         if 'in_progress' in found_statuses and 'done' in found_statuses:
-            rules['rules']['on_work_complete']['from_status'] = [found_statuses['in_progress']]
-            rules['rules']['on_work_complete']['to_status'] = found_statuses['done']
-            print(f"Configurado fim: {found_statuses['in_progress']} -> {found_statuses['done']}")
+            rules['events']['on_work_complete'] = [
+                {'from': found_statuses['in_progress'], 'to': found_statuses['done']}
+            ]
+            print(f"✅ Configurado fim: {found_statuses['in_progress']} ➡️  {found_statuses['done']}")
 
         # Habilita automação
         rules['enabled'] = True
@@ -991,9 +1005,13 @@ class InteractiveInterface:
             print("Nenhuma configuração foi definida")
 
     def _select_status_from_list(self, available_statuses, message, default_status=None):
-        """Permite selecionar um status de uma lista."""
+        """Permite selecionar um status de uma lista com busca fuzzy."""
+        if not available_statuses:
+            return inquirer.text(message=message, default=default_status or "").execute()
+
         choices = [Choice(status, status) for status in available_statuses]
-        choices.append(Choice(None, "[X] Não configurar"))
+        choices.append(Separator())
+        choices.append(Choice(None, "[X] Não configurar / Cancelar"))
 
         # Define o padrão se fornecido
         default_choice = default_status if default_status in available_statuses else None
@@ -1001,7 +1019,8 @@ class InteractiveInterface:
         selected = inquirer.select(
             message=message,
             choices=choices,
-            default=default_choice
+            default=default_choice,
+            filter=lambda val: val
         ).execute()
 
         return selected
@@ -1010,12 +1029,16 @@ class InteractiveInterface:
         """Aplica configuração customizada."""
         rules = status_manager.status_rules.copy()
 
-        for rule_name, config in config_mapping.items():
-            if rule_name in rules['rules']:
-                rules['rules'][rule_name]['from_status'] = [config['from']]
-                rules['rules'][rule_name]['to_status'] = config['to']
-                rules['rules'][rule_name]['enabled'] = config['enabled']
-                print(f"Configurado {rule_name}: {config['from']} -> {config['to']}")
+        if 'events' not in rules:
+            rules['events'] = {'on_work_start': [], 'on_first_commit': [], 'on_work_complete': []}
+
+        for event_name, config in config_mapping.items():
+            if event_name in rules['events']:
+                rules['events'][event_name] = [
+                    {'from': config['from'], 'to': config['to']}
+                ]
+                print(f"✅ Configurado {event_name}: {config['from']} ➡️  {config['to']}")
+
 
         # Habilita automação geral
         rules['enabled'] = True
@@ -1033,13 +1056,15 @@ class InteractiveInterface:
     def _apply_custom_config(self, status_manager, config_mapping):
         """Aplica configuração customizada."""
         rules = status_manager.status_rules.copy()
+        if 'events' not in rules:
+            rules['events'] = {'on_work_start': [], 'on_first_commit': [], 'on_work_complete': []}
 
-        for rule_name, config in config_mapping.items():
-            if rule_name in rules['rules']:
-                rules['rules'][rule_name]['from_status'] = [config['from']]
-                rules['rules'][rule_name]['to_status'] = config['to']
-                rules['rules'][rule_name]['enabled'] = config['enabled']
-                print(f"✅ Configurado {rule_name}: {config['from']} → {config['to']}")
+        for event_name, config in config_mapping.items():
+            if event_name in rules['events']:
+                rules['events'][event_name] = [
+                    {'from': config['from'], 'to': config['to']}
+                ]
+                print(f"✅ Configurado {event_name}: {config['from']} ➡️  {config['to']}")
 
         # Habilita automação geral
         rules['enabled'] = True
@@ -1049,168 +1074,167 @@ class InteractiveInterface:
     def _manual_config_from_statuses(self, status_manager, available_statuses):
         """Configuração completamente manual."""
         print("\n🔧 Configuração Manual Completa")
-        print("Vamos configurar cada regra individualmente...")
-
-        rules = status_manager.status_rules.copy()
-
-        # Lista as regras disponíveis
-        rule_names = list(rules['rules'].keys())
-        rule_choices = [Choice(name, name.replace('_', ' ').title()) for name in rule_names]
+        print("Vamos configurar as transições para cada evento...")
 
         while True:
-            selected_rule = inquirer.select(
-                message="Selecione uma regra para configurar:",
-                choices=rule_choices + [Choice("done", "✅ Finalizar configuração")]
+            event_name = inquirer.select(
+                message="Selecione um evento para adicionar regras:",
+                choices=[
+                    Choice("on_work_start", "🚀 Início de Trabalho"),
+                    Choice("on_first_commit", "📝 Primeiro Commit"),
+                    Choice("on_work_complete", "🏁 Finalização de Trabalho"),
+                    Separator(),
+                    Choice("done", "✅ Finalizar configuração")
+                ]
             ).execute()
 
-            if selected_rule == "done":
+            if event_name == "done":
                 break
 
-            self._configure_rule_manually(rules['rules'][selected_rule], available_statuses, selected_rule)
+            self._add_transition_to_event(status_manager, event_name)
 
         # Pergunta se quer habilitar automação
         if inquirer.confirm("Habilitar automação com essas configurações?", default=True).execute():
+            rules = status_manager.status_rules.copy()
             rules['enabled'] = True
             status_manager.save_status_rules(rules)
-            print("💾 Configuração manual salva e automação habilitada!")
-        else:
-            status_manager.save_status_rules(rules)
-            print("💾 Configuração salva (automação permanece desabilitada)")
-
-    def _configure_rule_manually(self, rule, available_statuses, rule_name):
-        """Configura uma regra manualmente."""
-        print(f"\n🔧 Configurando: {rule_name.replace('_', ' ').title()}")
-
-        # Habilitar/desabilitar regra
-        rule['enabled'] = inquirer.confirm(
-            f"Habilitar regra '{rule_name.replace('_', ' ')}'?",
-            default=rule.get('enabled', False)
-        ).execute()
-
-        if not rule['enabled']:
-            print("🔴 Regra desabilitada")
-            return
-
-        # Configurar status de origem (múltiplos)
-        print("\n📥 Status de origem (de onde a issue pode vir):")
-        from_statuses = []
-
-        while True:
-            status = self._select_status_from_list(
-                available_statuses,
-                f"Adicionar status de origem (já adicionados: {from_statuses}):",
-                None
-            )
-
-            if status is None:
-                break
-
-            if status not in from_statuses:
-                from_statuses.append(status)
-                print(f"✅ Adicionado: {status}")
-
-            if not inquirer.confirm("Adicionar mais um status de origem?", default=False).execute():
-                break
-
-        if from_statuses:
-            rule['from_status'] = from_statuses
-
-        # Configurar status de destino
-        to_status = self._select_status_from_list(
-            available_statuses,
-            "📤 Status de destino (para onde a issue vai):",
-            rule.get('to_status')
-        )
-
-        if to_status:
-            rule['to_status'] = to_status
-
-        print(f"✅ Regra '{rule_name}' configurada!")
-        print(f"   De: {rule.get('from_status', [])}")
-        print(f"   Para: {rule.get('to_status', 'N/A')}")
+            print("💾 Automação habilitada!")
 
     def _manage_individual_rules(self, status_manager):
         """Gerencia regras individuais."""
-        rules = status_manager.status_rules.get('rules', {})
-
-        rule_choices = []
-        for rule_name, rule_config in rules.items():
-            status = "🟢" if rule_config.get('enabled') else "🔴"
-            rule_choices.append(Choice(rule_name, f"{status} {rule_name.replace('_', ' ').title()}"))
-
-        selected_rule = inquirer.select(
-            message="Selecione a regra para editar:",
-            choices=rule_choices + [Choice("back", "⬅️  Voltar")]
-        ).execute()
-
-        if selected_rule == "back":
-            return
-
-        self._edit_individual_rule(status_manager, selected_rule)
-
-    def _edit_individual_rule(self, status_manager, rule_name):
-        """Edita uma regra individual."""
         rules = status_manager.status_rules.copy()
-        rule = rules['rules'][rule_name]
+        events = rules.get('events', {})
 
-        print(f"\n🔧 Editando regra: {rule_name.replace('_', ' ').title()}")
-        print(f"Status atual: {'🟢 Ativo' if rule.get('enabled') else '🔴 Inativo'}")
+        event_choices = [
+            Choice("on_work_start", "🚀 Início de Trabalho"),
+            Choice("on_first_commit", "📝 Primeiro Commit"),
+            Choice("on_work_complete", "🏁 Finalização de Trabalho"),
+            Separator(),
+            Choice("back", "⬅️  Voltar")
+        ]
 
-        action = inquirer.select(
-            message="O que deseja fazer?",
-            choices=[
-                Choice("toggle", "🔄 Ativar/Desativar"),
-                Choice("edit_from", "📝 Editar status de origem"),
-                Choice("edit_to", "📝 Editar status de destino"),
-                Choice("back", "⬅️  Voltar")
-            ]
+        selected_event = inquirer.select(
+            message="Selecione o evento para gerenciar regras:",
+            choices=event_choices
         ).execute()
 
-        if action == "back":
+        if selected_event == "back":
             return
-        elif action == "toggle":
-            rule['enabled'] = not rule.get('enabled', False)
-            status_text = "habilitada" if rule['enabled'] else "desabilitada"
-            print(f"✅ Regra {status_text}!")
-        elif action == "edit_from":
-            self._edit_from_statuses(rule)
-        elif action == "edit_to":
-            self._edit_to_status(rule)
 
-        # Salva as alterações
-        status_manager.save_status_rules(rules)
-        input("Pressione Enter para continuar...")
+        self._manage_event_transitions(status_manager, selected_event)
 
-    def _edit_from_statuses(self, rule):
-        """Edita status de origem de uma regra."""
-        current_statuses = rule.get('from_status', [])
-        print(f"Status atuais de origem: {current_statuses}")
+    def _manage_event_transitions(self, status_manager, event_name):
+        """Gerencia transições de um evento específico."""
+        while True:
+            rules = status_manager.status_rules.copy()
+            transitions = rules.get('events', {}).get(event_name, [])
+            
+            title = event_name.replace('on_', '').replace('_', ' ').title()
+            print(f"\n🔧 Gerenciando: {title}")
+            
+            choices = []
+            if transitions:
+                for i, trans in enumerate(transitions):
+                    choices.append(Choice(i, f"❌ Remover: {trans['from']} ➡️  {trans['to']}"))
+                choices.append(Separator())
+            
+            choices.append(Choice("add", "➕ Adicionar nova transição"))
+            choices.append(Choice("back", "⬅️  Voltar"))
 
-        new_statuses_str = inquirer.text(
-            message="Digite os status de origem separados por vírgula:",
-            default=", ".join(current_statuses),
-            validate=lambda x: len(x.strip()) > 0,
-            invalid_message="Status não podem estar vazios"
+            action = inquirer.select(
+                message="Selecione uma ação:",
+                choices=choices
+            ).execute()
+
+            if action == "back":
+                break
+            elif action == "add":
+                self._add_transition_to_event(status_manager, event_name)
+            else:
+                # Remover transição
+                idx = int(action)
+                removed = transitions.pop(idx)
+                status_manager.save_status_rules(rules)
+                print(f"✅ Transição removida: {removed['from']} ➡️  {removed['to']}")
+
+    def _add_transition_to_event(self, status_manager, event_name):
+        """Adiciona uma nova transição a um evento com filtragem por projeto."""
+        rules = status_manager.status_rules.copy()
+        
+        # Garante que o cliente Jira está conectado
+        if not self.jira_client or not self.jira_client.is_connected():
+            if self.config.is_jira_configured():
+                jira_config = self.config.get_jira_config()
+                temp_jira = JiraClient(jira_config['url'], jira_config['user'], jira_config['token'])
+                if temp_jira.connect():
+                    self.jira_client = temp_jira
+
+        if not self.jira_client or not self.jira_client.is_connected():
+            print("\n❌ Jira não está conectado. Configure as credenciais primeiro.")
+            input("Pressione Enter para continuar...")
+            return
+
+        # 1. Seleção de Projeto para filtrar status
+        print("\n🔍 Buscando projetos...")
+        projects = self.jira_client.get_projects()
+        
+        project_choices = [Choice("all", "🌐 Todos os Status (Global)")]
+        for p in projects:
+            project_choices.append(Choice(p['key'], f"🏗️  {p['key']} - {p['name']}"))
+        
+        selected_project = inquirer.select(
+            message="Filtrar status de qual projeto?",
+            choices=project_choices,
+            default="all"
         ).execute()
 
-        new_statuses = [s.strip() for s in new_statuses_str.split(',') if s.strip()]
-        rule['from_status'] = new_statuses
-        print(f"✅ Status de origem atualizados: {new_statuses}")
+        # 2. Busca de Status baseada no projeto
+        if selected_project == "all":
+            print("🔍 Buscando todos os status globais...")
+            available_statuses = self.jira_client.get_all_statuses()
+        else:
+            print(f"🔍 Buscando status do projeto {selected_project}...")
+            available_statuses = self.jira_client.get_project_statuses(selected_project)
 
-    def _edit_to_status(self, rule):
-        """Edita status de destino de uma regra."""
-        current_status = rule.get('to_status', '')
-        print(f"Status atual de destino: {current_status}")
+        if not available_statuses:
+            print("⚠️  Nenhum status encontrado.")
+            if not inquirer.confirm("Deseja digitar manualmente?", default=True).execute():
+                return
 
-        new_status = inquirer.text(
-            message="Digite o novo status de destino:",
-            default=current_status,
-            validate=lambda x: len(x.strip()) > 0,
-            invalid_message="Status de destino não pode estar vazio"
-        ).execute()
+        def get_status_choice(message):
+            if available_statuses:
+                choice = inquirer.select(
+                    message=message,
+                    choices=[Choice(s, s) for s in available_statuses] + [Choice("custom", "✏️  Digitar manualmente...")]
+                ).execute()
+                
+                if choice == "custom":
+                    return inquirer.text(message=f"Digite o {message.lower()}").execute()
+                return choice
+            else:
+                return inquirer.text(message=message).execute()
 
-        rule['to_status'] = new_status.strip()
-        print(f"✅ Status de destino atualizado: {new_status}")
+        # 3. Seleção de Origem e Destino
+        from_status = get_status_choice("Status de ORIGEM:")
+        if not from_status: return
+
+        to_status = get_status_choice("Status de DESTINO:")
+        if not to_status: return
+
+        if from_status and to_status:
+            if 'events' not in rules:
+                rules['events'] = {'on_work_start': [], 'on_first_commit': [], 'on_work_complete': []}
+            
+            if event_name not in rules['events']:
+                rules['events'][event_name] = []
+            
+            rules['events'][event_name].append({
+                'from': from_status,
+                'to': to_status
+            })
+            
+            status_manager.save_status_rules(rules)
+            print(f"✅ Nova regra adicionada: {from_status} ➡️  {to_status}")
 
     def _reset_automation_rules(self, status_manager):
         """Reseta regras para os padrões."""
