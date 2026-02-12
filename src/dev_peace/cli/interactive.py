@@ -25,7 +25,17 @@ class InteractiveInterface:
     
     def run(self) -> int:
         """Executa a interface interativa."""
-        print("🎨 Bem-vindo à interface interativa do Dev Peace!")
+        print(r'''
+  _____                             _.-.                   _____                    
+ |  __ \                        .-.  `) |  .-.            |  __ \                   
+ | |  | | _____   __        _.'`. .~./  \.~. .`'._        | |__) |__  __ _  ___ ___ 
+ | |  | |/ _ \ \ / /    .-'`.'-'.'.-:    ;-.'.'-'.`'-.    |  ___/ _ \/ _` |/ __/ _ \
+ | |__| |  __/\ V /      `'`'`'`'`   \  /   `'`'`'`'`     | |  |  __/ (_| | (_|  __/
+ |_____/ \___| \_/                   /||\                 |_|   \___|\__,_|\___\___|
+                          jgs       / ^^ \                                       
+                                    `'``'`
+''')
+        print("Bem-vindo à interface interativa do Dev Peace!")
         print("Use as setas para navegar e Enter para selecionar\n")
         
         while True:
@@ -33,7 +43,7 @@ class InteractiveInterface:
                 choice = self._show_main_menu()
                 
                 if choice == 'exit':
-                    print("👋 Até logo! Que a paz esteja com seu código!")
+                    print("Até logo! Que a paz esteja com seu código!")
                     return 0
                 elif choice == 'status':
                     self._show_status()
@@ -49,23 +59,23 @@ class InteractiveInterface:
                     self._manage_jira()
                 
             except KeyboardInterrupt:
-                print("\n👋 Até logo!")
+                print("\nAté logo!")
                 return 0
             except Exception as e:
-                print(f"\n❌ Erro inesperado: {e}")
+                print(f"\nErro inesperado: {e}")
                 input("Pressione Enter para continuar...")
     
     def _show_main_menu(self) -> str:
         """Mostra o menu principal."""
         choices = [
-            Choice("status", "📊 Ver Status"),
-            Choice("repositories", "📁 Gerenciar Repositórios"),
-            Choice("monitoring", "👁️  Controlar Monitoramento"),
-            Choice("orphans", "👻 Registros Órfãos"),
-            Choice("jira", "🔗 Integração Jira"),
-            Choice("config", "⚙️  Configurações"),
+            Choice("status",       "[Status]   Ver Status"),
+            Choice("repositories", "[Repos]    Gerenciar Repositórios"),
+            Choice("monitoring",   "[Monitor]  Controlar Monitoramento"),
+            Choice("orphans",      "[Orphans]  Registros Órfãos"),
+            Choice("jira",         "[Jira]     Integração Jira"),
+            Choice("config",       "[Config]   Configurações"),
             Separator(),
-            Choice("exit", "🚪 Sair")
+            Choice("exit",         "[Sair]     Sair")
         ]
         
         return inquirer.select(
@@ -78,21 +88,21 @@ class InteractiveInterface:
         """Mostra status detalhado."""
         stats = self.monitor.get_repository_stats()
         
-        print("\n📊 Status do Dev Peace")
+        print("\nStatus do Dev Peace")
         print("=" * 40)
-        print(f"🏃 Status: {'🟢 Rodando' if stats['is_running'] else '🔴 Parado'}")
-        print(f"📁 Repositórios: {stats['total_repositories']} total, {stats['active_repositories']} ativos")
-        print(f"⚡ Sessões ativas: {stats['active_sessions']}")
-        print(f"👻 Registros órfãos: {stats['orphan_records']}")
-        print(f"👀 Caminhos monitorados: {stats['monitored_paths']}")
+        print(f"Status: {'[Rodando]' if stats['is_running'] else '[Parado]'}")
+        print(f"Repositórios: {stats['total_repositories']} total, {stats['active_repositories']} ativos")
+        print(f"Sessões ativas: {stats['active_sessions']}")
+        print(f"Registros órfãos: {stats['orphan_records']}")
+        print(f"Caminhos monitorados: {stats['monitored_paths']}")
         
         # Sessões ativas
         active_sessions = self.monitor.get_active_sessions()
         if active_sessions:
-            print("\n🔥 Sessões ativas:")
+            print("\nSessões ativas:")
             for session in active_sessions:
                 issue_info = f" ({session.jira_issue})" if session.jira_issue else " (sem issue)"
-                print(f"  • {session.branch_name}{issue_info}")
+                print(f"  * {session.branch_name}{issue_info}")
         
         input("\nPressione Enter para continuar...")
     
@@ -102,11 +112,11 @@ class InteractiveInterface:
             action = inquirer.select(
                 message="Gerenciar repositórios:",
                 choices=[
-                    Choice("list", "📋 Listar repositórios"),
-                    Choice("add", "➕ Adicionar repositório"),
-                    Choice("toggle", "🔄 Ativar/Desativar repositório"),
+                    Choice("list",   "[Listar]  Listar repositórios"),
+                    Choice("add",    "[Add]     Adicionar repositório"),
+                    Choice("toggle", "[Toggle]  Ativar/Desativar repositório"),
                     Separator(),
-                    Choice("back", "⬅️  Voltar")
+                    Choice("back",   "[Voltar]  Voltar")
                 ]
             ).execute()
             
@@ -124,19 +134,19 @@ class InteractiveInterface:
         repositories = self.db.get_all_repositories()
         
         if not repositories:
-            print("\n📭 Nenhum repositório encontrado")
+            print("\nNenhum repositório encontrado")
             input("Pressione Enter para continuar...")
             return
         
-        print("\n📚 Repositórios monitorados:")
+        print("\nRepositórios monitorados:")
         print("=" * 50)
         
         for repo in repositories:
-            status = "🟢 Ativo" if repo.is_active else "🔴 Inativo"
+            status = "[Ativo]" if repo.is_active else "[Inativo]"
             print(f"\n{status} - {repo.name}")
-            print(f"📍 {repo.path}")
+            print(f"Local: {repo.path}")
             if repo.last_activity:
-                print(f"⏰ Última atividade: {repo.last_activity}")
+                print(f"Ultima atividade: {repo.last_activity}")
         
         input("\nPressione Enter para continuar...")
     
@@ -149,11 +159,11 @@ class InteractiveInterface:
         ).execute()
 
         if path:
-            print(f"\n📁 Adicionando repositório: {path}")
+            print(f"\nAdicionando repositório: {path}")
             if self.monitor.add_repository(str(path)):
-                print("✅ Repositório adicionado com sucesso!")
+                print("Repositório adicionado com sucesso!")
             else:
-                print("❌ Erro ao adicionar repositório")
+                print("Erro ao adicionar repositório")
 
             input("Pressione Enter para continuar...")
     
@@ -162,13 +172,13 @@ class InteractiveInterface:
         repositories = self.db.get_all_repositories()
 
         if not repositories:
-            print("\n📭 Nenhum repositório encontrado")
+            print("\nNenhum repositório encontrado")
             input("Pressione Enter para continuar...")
             return
 
         choices = []
         for repo in repositories:
-            status = "🟢" if repo.is_active else "🔴"
+            status = "[+]" if repo.is_active else "[-]"
             choices.append(Choice(repo.id, f"{status} {repo.name}"))
 
         repo_id = inquirer.select(
@@ -181,11 +191,11 @@ class InteractiveInterface:
         if repo:
             if self.db.toggle_repository_status(repo_id):
                 new_status = "ativado" if not repo.is_active else "desativado"
-                print(f"\n✅ Repositório {repo.name} foi {new_status}!")
+                print(f"\nRepositório {repo.name} foi {new_status}!")
             else:
-                print(f"\n❌ Erro ao alterar status do repositório {repo.name}")
+                print(f"\nErro ao alterar status do repositório {repo.name}")
         else:
-            print("\n❌ Repositório não encontrado")
+            print("\nRepositório não encontrado")
 
         input("Pressione Enter para continuar...")
     
@@ -194,20 +204,20 @@ class InteractiveInterface:
         orphans = self.db.get_orphan_records()
         
         if not orphans:
-            print("\n🎉 Nenhum registro órfão! Tudo organizado!")
+            print("\nNenhum registro órfão! Tudo organizado!")
             input("Pressione Enter para continuar...")
             return
         
-        print(f"\n👻 Encontrados {len(orphans)} registros órfãos")
+        print(f"\nEncontrados {len(orphans)} registros órfãos")
         
         action = inquirer.select(
             message="O que fazer com os órfãos?",
             choices=[
-                Choice("list", "📋 Listar todos"),
-                Choice("assign", "🔗 Associar issue manualmente"),
-                Choice("delete", "🗑️  Excluir órfão"),
+                Choice("list",   "[Listar]  Listar todos"),
+                Choice("assign", "[Link]    Associar issue manualmente"),
+                Choice("delete", "[Del]     Excluir órfão"),
                 Separator(),
-                Choice("back", "⬅️  Voltar")
+                Choice("back",   "[Voltar]  Voltar")
             ]
         ).execute()
         
@@ -222,14 +232,14 @@ class InteractiveInterface:
     
     def _list_orphans(self, orphans):
         """Lista registros órfãos."""
-        print("\n👻 Registros órfãos:")
+        print("\nRegistros órfãos:")
         print("=" * 40)
         
         for i, orphan in enumerate(orphans, 1):
-            print(f"\n{i}. 🌿 Branch: {orphan.branch_name}")
-            print(f"   ⏱️  Tempo: {orphan.total_minutes} minutos")
-            print(f"   📊 Atividades: {orphan.activities_count}")
-            print(f"   📅 Criado: {orphan.created_at}")
+            print(f"\n{i}. Branch: {orphan.branch_name}")
+            print(f"   Tempo: {orphan.total_minutes} minutos")
+            print(f"   Atividades: {orphan.activities_count}")
+            print(f"   Criado: {orphan.created_at}")
         
         input("\nPressione Enter para continuar...")
     
@@ -239,7 +249,7 @@ class InteractiveInterface:
         for orphan in orphans:
             choices.append(Choice(
                 orphan.id,
-                f"🌿 {orphan.branch_name} ({orphan.total_minutes}min, {orphan.activities_count} atividades)"
+                f"Branch: {orphan.branch_name} ({orphan.total_minutes}min, {orphan.activities_count} atividades)"
             ))
 
         orphan_id = inquirer.select(
@@ -253,20 +263,20 @@ class InteractiveInterface:
             invalid_message="Issue não pode estar vazia"
         ).execute()
 
-        print(f"\n🔗 Associando issue {issue_key} ao registro órfão...")
+        print(f"\nAssociando issue {issue_key} ao registro órfão...")
 
         # Testa se a issue existe no Jira (se configurado)
         if self.jira_client and self.jira_client.is_connected():
             if not self.jira_client.issue_exists(issue_key):
-                print(f"⚠️  Issue {issue_key} não encontrada no Jira")
+                print(f"Aviso: Issue {issue_key} não encontrada no Jira")
                 if not inquirer.confirm("Continuar mesmo assim?", default=False).execute():
                     return
 
         # Associa a issue
         if self.db.assign_orphan_issue(orphan_id, issue_key):
-            print("✅ Issue associada com sucesso!")
+            print("Issue associada com sucesso!")
         else:
-            print("❌ Erro ao associar issue")
+            print("Erro ao associar issue")
 
         input("Pressione Enter para continuar...")
     
@@ -276,7 +286,7 @@ class InteractiveInterface:
         for orphan in orphans:
             choices.append(Choice(
                 orphan.id,
-                f"🌿 {orphan.branch_name} ({orphan.total_minutes}min, {orphan.activities_count} atividades)"
+                f"Branch: {orphan.branch_name} ({orphan.total_minutes}min, {orphan.activities_count} atividades)"
             ))
 
         orphan_id = inquirer.select(
@@ -285,13 +295,13 @@ class InteractiveInterface:
         ).execute()
 
         # Confirma exclusão
-        if inquirer.confirm("⚠️  Tem certeza que deseja excluir este registro?", default=False).execute():
+        if inquirer.confirm("Tem certeza que deseja excluir este registro?", default=False).execute():
             if self.db.delete_orphan_record(orphan_id):
-                print("\n✅ Registro órfão excluído com sucesso!")
+                print("\nRegistro órfão excluído com sucesso!")
             else:
-                print("\n❌ Erro ao excluir registro órfão")
+                print("\nErro ao excluir registro órfão")
         else:
-            print("\n🚫 Exclusão cancelada")
+            print("\nExclusão cancelada")
 
         input("Pressione Enter para continuar...")
     
@@ -301,10 +311,10 @@ class InteractiveInterface:
             action = inquirer.select(
                 message="Configurações:",
                 choices=[
-                    Choice("show", "👀 Ver configurações"),
-                    Choice("jira", "🔗 Configurar Jira"),
+                    Choice("show", "[Ver]     Ver configurações"),
+                    Choice("jira", "[Jira]    Configurar Jira"),
                     Separator(),
-                    Choice("back", "⬅️  Voltar")
+                    Choice("back", "[Voltar]  Voltar")
                 ]
             ).execute()
             
@@ -319,7 +329,7 @@ class InteractiveInterface:
         """Mostra configurações."""
         config = self.config.get_all_settings()
         
-        print("\n⚙️  Configurações atuais:")
+        print("\nConfigurações atuais:")
         print("=" * 30)
         
         for key, value in config.items():
@@ -333,7 +343,7 @@ class InteractiveInterface:
     
     def _config_jira(self):
         """Configura Jira."""
-        print("\n🔗 Configuração do Jira")
+        print("\nConfiguração do Jira")
         
         current_url = self.config.get_setting('jira_url', '')
         current_user = self.config.get_setting('jira_user', '')
@@ -363,7 +373,7 @@ class InteractiveInterface:
         self.config.set_setting('jira_user', user)
         self.config.set_setting('jira_token', token)
         
-        print("✅ Configurações do Jira salvas!")
+        print("Configurações do Jira salvas!")
         
         # Testa conexão
         if inquirer.confirm("Testar conexão com o Jira?", default=True).execute():
@@ -373,7 +383,7 @@ class InteractiveInterface:
     
     def _test_jira_connection(self):
         """Testa conexão com Jira."""
-        print("\n🔍 Testando conexão com Jira...")
+        print("\nTestando conexão com Jira...")
         
         try:
             url = self.config.get_setting('jira_url')
@@ -382,12 +392,12 @@ class InteractiveInterface:
             
             jira = JiraClient(url, user, token)
             if jira.connect():
-                print("✅ Conexão com Jira estabelecida com sucesso!")
+                print("Conexão com Jira estabelecida com sucesso!")
                 self.jira_client = jira
             else:
-                print("❌ Falha na conexão com Jira")
+                print("Falha na conexão com Jira")
         except Exception as e:
-            print(f"❌ Erro ao testar conexão: {e}")
+            print(f"Erro ao testar conexão: {e}")
     
     def _manage_monitoring(self):
         """Gerencia monitoramento."""
@@ -397,37 +407,37 @@ class InteractiveInterface:
             action = inquirer.select(
                 message="Monitoramento está rodando:",
                 choices=[
-                    Choice("stop", "🛑 Parar monitoramento"),
-                    Choice("status", "📊 Ver status"),
+                    Choice("stop",   "[Stop]    Parar monitoramento"),
+                    Choice("status", "[Status]  Ver status"),
                     Separator(),
-                    Choice("back", "⬅️  Voltar")
+                    Choice("back",   "[Voltar]  Voltar")
                 ]
             ).execute()
             
             if action == "stop":
-                print("🛑 Parando monitoramento...")
+                print("Parando monitoramento...")
                 self.monitor.stop_monitoring()
-                print("✅ Monitoramento parado!")
+                print("Monitoramento parado!")
                 input("Pressione Enter para continuar...")
         else:
             action = inquirer.select(
                 message="Monitoramento está parado:",
                 choices=[
-                    Choice("start", "🚀 Iniciar monitoramento"),
-                    Choice("start_specific", "📁 Monitorar caminhos específicos"),
+                    Choice("start",          "[Start]     Iniciar monitoramento"),
+                    Choice("start_specific", "[Caminhos]  Monitorar caminhos específicos"),
                     Separator(),
-                    Choice("back", "⬅️  Voltar")
+                    Choice("back",           "[Voltar]    Voltar")
                 ]
             ).execute()
             
             if action == "start":
-                print("🚀 Iniciando monitoramento...")
+                print("Iniciando monitoramento...")
                 self.monitor.start_monitoring()
-                print("✅ Monitoramento iniciado!")
+                print("Monitoramento iniciado!")
                 input("Pressione Enter para continuar...")
             elif action == "start_specific":
                 # TODO: Implementar seleção de caminhos específicos
-                print("📁 Funcionalidade em desenvolvimento...")
+                print("Funcionalidade em desenvolvimento...")
                 input("Pressione Enter para continuar...")
     
     def _manage_jira(self):
@@ -437,22 +447,22 @@ class InteractiveInterface:
             is_configured = self.config.is_jira_configured()
             is_connected = self.jira_client and self.jira_client.is_connected()
 
-            status_text = "🟢 Conectado" if is_connected else ("🟡 Configurado" if is_configured else "🔴 Não configurado")
+            status_text = "[Conectado]" if is_connected else ("[Configurado]" if is_configured else "[Nao configurado]")
 
             action = inquirer.select(
-                message=f"Integração Jira ({status_text}):",
+                message=f"Integração Jira {status_text}:",
                 choices=[
-                    Choice("test", "🔍 Testar conexão"),
-                    Choice("projects", "🏗️  Ver projetos disponíveis"),
-                    Choice("status", "📊 Descobrir status de projeto"),
-                    Choice("workflow", "🔄 Analisar workflow de issue"),
-                    Choice("automation", "🤖 Configurar automação de status"),
+                    Choice("test",       "[Test]      Testar conexão"),
+                    Choice("projects",   "[Projetos]  Ver projetos disponíveis"),
+                    Choice("status",     "[Status]    Descobrir status de projeto"),
+                    Choice("workflow",   "[Workflow]  Analisar workflow de issue"),
+                    Choice("automation", "[Auto]      Configurar automação de status"),
                     Separator(),
-                    Choice("issues", "📋 Buscar minhas issues"),
-                    Choice("worklog", "⏱️  Criar worklog de teste"),
-                    Choice("config", "⚙️  Configurar credenciais"),
+                    Choice("issues",     "[Issues]    Buscar minhas issues"),
+                    Choice("worklog",    "[Worklog]   Criar worklog de teste"),
+                    Choice("config",     "[Config]    Configurar credenciais"),
                     Separator(),
-                    Choice("back", "⬅️  Voltar")
+                    Choice("back",       "[Voltar]    Voltar")
                 ]
             ).execute()
 
@@ -478,21 +488,21 @@ class InteractiveInterface:
     def _show_my_jira_issues(self):
         """Mostra issues do usuário no Jira."""
         if not self.jira_client or not self.jira_client.is_connected():
-            print("\n❌ Jira não está conectado")
+            print("\nJira não está conectado")
             input("Pressione Enter para continuar...")
             return
 
-        print("\n🔍 Buscando suas issues no Jira...")
+        print("\nBuscando suas issues no Jira...")
         issues = self.jira_client.get_my_issues()
 
         if not issues:
-            print("📭 Nenhuma issue encontrada")
+            print("Nenhuma issue encontrada")
         else:
-            print(f"\n📋 Encontradas {len(issues)} issues:")
+            print(f"\nEncontradas {len(issues)} issues:")
             print("=" * 50)
             for issue in issues[:10]:  # Mostra apenas as 10 primeiras
-                print(f"🎫 {issue['key']} - {issue['summary']}")
-                print(f"   📊 Status: {issue['status']}")
+                print(f"Ticket: {issue['key']} - {issue['summary']}")
+                print(f"   Status: {issue['status']}")
                 print()
 
         input("Pressione Enter para continuar...")
@@ -500,7 +510,7 @@ class InteractiveInterface:
     def _create_test_worklog(self):
         """Cria um worklog de teste."""
         if not self.jira_client or not self.jira_client.is_connected():
-            print("\n❌ Jira não está conectado")
+            print("\nJira não está conectado")
             input("Pressione Enter para continuar...")
             return
 
@@ -524,62 +534,62 @@ class InteractiveInterface:
             invalid_message="Descrição não pode estar vazia"
         ).execute()
 
-        print(f"\n⏱️  Criando worklog na issue {issue_key}...")
+        print(f"\nCriando worklog na issue {issue_key}...")
         worklog_id = self.jira_client.add_worklog(issue_key, time_spent, description)
 
         if worklog_id:
-            print(f"✅ Worklog criado com sucesso! ID: {worklog_id}")
+            print(f"Worklog criado com sucesso! ID: {worklog_id}")
         else:
-            print("❌ Erro ao criar worklog")
+            print("Erro ao criar worklog")
 
         input("Pressione Enter para continuar...")
 
     def _show_jira_projects(self):
         """Mostra projetos disponíveis no Jira."""
         if not self.jira_client or not self.jira_client.is_connected():
-            print("\n❌ Jira não está conectado")
+            print("\nJira não está conectado")
             input("Pressione Enter para continuar...")
             return
 
-        print("\n🔍 Buscando projetos do Jira...")
+        print("\nBuscando projetos do Jira...")
         projects = self.jira_client.get_projects()
 
         if not projects:
-            print("📭 Nenhum projeto encontrado")
+            print("Nenhum projeto encontrado")
             input("Pressione Enter para continuar...")
             return
 
-        print(f"\n🏗️ Encontrados {len(projects)} projetos:")
+        print(f"\nEncontrados {len(projects)} projetos:")
         print("=" * 50)
 
         for project in projects:
-            print(f"🔑 {project['key']} - {project['name']}")
+            print(f"Key: {project['key']} - {project['name']}")
             if project['description']:
-                print(f"   📝 {project['description']}")
+                print(f"   Desc: {project['description']}")
             if project['lead']:
-                print(f"   👤 Lead: {project['lead']}")
+                print(f"   Lead: {project['lead']}")
             print()
 
-        print("💡 Use 'Descobrir status de projeto' para ver os status disponíveis")
+        print("Dica: Use 'Descobrir status de projeto' para ver os status disponíveis")
         input("Pressione Enter para continuar...")
 
     def _discover_project_statuses(self):
         """Descobre status de um projeto."""
         if not self.jira_client or not self.jira_client.is_connected():
-            print("\n❌ Jira não está conectado")
+            print("\nJira não está conectado")
             input("Pressione Enter para continuar...")
             return
 
         # Primeiro, mostra projetos disponíveis
         projects = self.jira_client.get_projects()
         if not projects:
-            print("\n📭 Nenhum projeto encontrado")
+            print("\nNenhum projeto encontrado")
             input("Pressione Enter para continuar...")
             return
 
         # Permite selecionar um projeto
         project_choices = [Choice(p['key'], f"{p['key']} - {p['name']}") for p in projects]
-        project_choices.append(Choice("manual", "✏️  Digitar chave manualmente"))
+        project_choices.append(Choice("manual", "[Manual] Digitar chave manualmente"))
 
         selected_project = inquirer.select(
             message="Selecione o projeto:",
@@ -595,19 +605,19 @@ class InteractiveInterface:
         else:
             project_key = selected_project
 
-        print(f"\n🔍 Buscando status do projeto {project_key}...")
+        print(f"\nBuscando status do projeto {project_key}...")
         statuses = self.jira_client.get_project_statuses(project_key)
 
         if not statuses:
-            print(f"📭 Nenhum status encontrado para o projeto {project_key}")
+            print(f"Nenhum status encontrado para o projeto {project_key}")
             input("Pressione Enter para continuar...")
             return
 
-        print(f"\n🔄 Status disponíveis no projeto {project_key}:")
+        print(f"\nStatus disponíveis no projeto {project_key}:")
         print("=" * 40)
 
         for status in statuses:
-            print(f"📊 {status['name']}")
+            print(f"Status: {status['name']}")
 
         # Pergunta se quer configurar automação baseada nestes status
         if inquirer.confirm(
@@ -621,7 +631,7 @@ class InteractiveInterface:
     def _analyze_issue_workflow(self):
         """Analisa workflow de uma issue específica."""
         if not self.jira_client or not self.jira_client.is_connected():
-            print("\n❌ Jira não está conectado")
+            print("\nJira não está conectado")
             input("Pressione Enter para continuar...")
             return
 
@@ -631,25 +641,25 @@ class InteractiveInterface:
             invalid_message="Digite uma chave válida (ex: PROJ-123)"
         ).execute()
 
-        print(f"\n🔍 Analisando workflow da issue {issue_key}...")
+        print(f"\nAnalisando workflow da issue {issue_key}...")
         workflow_info = self.jira_client.get_issue_workflow_statuses(issue_key)
 
         if not workflow_info:
-            print(f"❌ Não foi possível obter informações da issue {issue_key}")
+            print(f"Não foi possível obter informações da issue {issue_key}")
             input("Pressione Enter para continuar...")
             return
 
-        print(f"\n📋 Issue: {issue_key}")
+        print(f"\nIssue: {issue_key}")
         print("=" * 30)
-        print(f"📊 Status atual: {workflow_info['current_status']}")
-        print(f"🏗️ Projeto: {workflow_info['project']}")
-        print(f"📝 Tipo: {workflow_info['issue_type']}")
+        print(f"Status atual: {workflow_info['current_status']}")
+        print(f"Projeto: {workflow_info['project']}")
+        print(f"Tipo: {workflow_info['issue_type']}")
 
-        print("\n🔄 Transições disponíveis:")
+        print("\nTransições disponíveis:")
         for transition in workflow_info['available_transitions']:
-            print(f"  • {transition['name']} → {transition['to_status']}")
+            print(f"  * {transition['name']} -> {transition['to_status']}")
             if transition['description']:
-                print(f"    📝 {transition['description']}")
+                print(f"    Desc: {transition['description']}")
 
         # Pergunta se quer configurar automação baseada nesta issue
         if inquirer.confirm(
@@ -670,14 +680,14 @@ class InteractiveInterface:
             action = inquirer.select(
                 message="Configurar automação de status:",
                 choices=[
-                    Choice("show", "👀 Ver regras atuais"),
-                    Choice("enable", "🟢 Habilitar automação"),
-                    Choice("disable", "🔴 Desabilitar automação"),
-                    Choice("configure", "🎯 Configurar baseado no Jira"),
-                    Choice("rules", "🔧 Gerenciar regras individuais"),
-                    Choice("reset", "🔄 Resetar para padrões"),
+                    Choice("show", "[Ver] Ver regras atuais"),
+                    Choice("enable", "[ON] Habilitar automação"),
+                    Choice("disable", "[OFF] Desabilitar automação"),
+                    Choice("configure", "[🎯] Configurar baseado no Jira"),
+                    Choice("rules", "[🔧] Gerenciar regras individuais"),
+                    Choice("reset", "[Reset] Resetar para padrões"),
                     Separator(),
-                    Choice("back", "⬅️  Voltar")
+                    Choice("back", "[Voltar] Voltar")
                 ]
             ).execute()
 
@@ -700,13 +710,13 @@ class InteractiveInterface:
         """Mostra regras de automação atuais."""
         rules = status_manager.status_rules
 
-        print("\n🤖 Regras de Automação de Status")
+        print("\nRegras de Automação de Status")
         print("=" * 40)
-        print(f"Status geral: {'🟢 Habilitado' if rules.get('enabled') else '🔴 Desabilitado'}")
+        print(f"Status geral: {'[Habilitado]' if rules.get('enabled') else '[Desabilitado]'}")
         print()
 
         for rule_name, rule_config in rules.get('rules', {}).items():
-            status = "🟢 Ativo" if rule_config.get('enabled') else "🔴 Inativo"
+            status = "[Ativo]" if rule_config.get('enabled') else "[Inativo]"
             print(f"{status} {rule_name.replace('_', ' ').title()}")
             print(f"   De: {rule_config.get('from_status', [])}")
             print(f"   Para: {rule_config.get('to_status', 'N/A')}")
@@ -719,7 +729,7 @@ class InteractiveInterface:
         rules = status_manager.status_rules.copy()
         rules['enabled'] = True
         status_manager.save_status_rules(rules)
-        print("\n✅ Automação de status habilitada!")
+        print("\nAutomação de status habilitada!")
         input("Pressione Enter para continuar...")
 
     def _disable_automation(self, status_manager):
@@ -727,13 +737,13 @@ class InteractiveInterface:
         rules = status_manager.status_rules.copy()
         rules['enabled'] = False
         status_manager.save_status_rules(rules)
-        print("\n🔴 Automação de status desabilitada!")
+        print("\nAutomação de status desabilitada!")
         input("Pressione Enter para continuar...")
 
     def _configure_automation_from_jira(self, status_manager):
         """Configura automação baseada no Jira."""
         if not self.jira_client or not self.jira_client.is_connected():
-            print("\n❌ Jira não está conectado")
+            print("\nJira não está conectado")
             input("Pressione Enter para continuar...")
             return
 
@@ -741,9 +751,9 @@ class InteractiveInterface:
         method = inquirer.select(
             message="Como deseja descobrir os status?",
             choices=[
-                Choice("project", "🏗️  Por projeto"),
-                Choice("issue", "🎫 Por issue específica"),
-                Choice("back", "⬅️  Voltar")
+                Choice("project", "[Projeto] Por projeto"),
+                Choice("issue", "[Issue] Por issue específica"),
+                Choice("back", "[Voltar] Voltar")
             ]
         ).execute()
 
@@ -758,13 +768,13 @@ class InteractiveInterface:
         """Configura automação por projeto."""
         projects = self.jira_client.get_projects()
         if not projects:
-            print("\n📭 Nenhum projeto encontrado")
+            print("\nNenhum projeto encontrado")
             input("Pressione Enter para continuar...")
             return
 
         # Seleciona projeto
         project_choices = [Choice(p['key'], f"{p['key']} - {p['name']}") for p in projects]
-        project_choices.append(Choice("manual", "✏️  Digitar chave manualmente"))
+        project_choices.append(Choice("manual", "[Manual] Digitar chave manualmente"))
 
         selected_project = inquirer.select(
             message="Selecione o projeto:",
@@ -781,11 +791,11 @@ class InteractiveInterface:
             project_key = selected_project
 
         # Busca status do projeto
-        print(f"\n🔍 Descobrindo status do projeto {project_key}...")
+        print(f"\nDescobrindo status do projeto {project_key}...")
         statuses = self.jira_client.get_project_statuses(project_key)
 
         if not statuses:
-            print(f"📭 Nenhum status encontrado para {project_key}")
+            print(f"Nenhum status encontrado para {project_key}")
             input("Pressione Enter para continuar...")
             return
 
@@ -800,11 +810,11 @@ class InteractiveInterface:
             invalid_message="Digite uma chave válida"
         ).execute()
 
-        print(f"\n🔍 Analisando issue {issue_key}...")
+        print(f"\nAnalisando issue {issue_key}...")
         workflow_info = self.jira_client.get_issue_workflow_statuses(issue_key)
 
         if not workflow_info:
-            print(f"❌ Não foi possível analisar a issue {issue_key}")
+            print(f"Não foi possível analisar a issue {issue_key}")
             input("Pressione Enter para continuar...")
             return
 
@@ -816,10 +826,10 @@ class InteractiveInterface:
 
         status_manager = StatusManager(self.config, self.jira_client)
 
-        print(f"\n🎯 Configurando automação para projeto {project_key}...")
+        print(f"\nConfigurando automação para projeto {project_key}...")
         print("Status disponíveis:")
         for status in available_statuses:
-            print(f"  📊 {status}")
+            print(f"  Status: {status}")
 
         # Mapeia status automaticamente
         status_mapping = {
@@ -847,7 +857,7 @@ class InteractiveInterface:
                     break
 
         if found_statuses:
-            print("\n💡 Mapeamento automático encontrado:")
+            print("\nMapeamento automático encontrado:")
             for category, status in found_statuses.items():
                 print(f"  {category}: {status}")
 
@@ -855,10 +865,10 @@ class InteractiveInterface:
             config_action = inquirer.select(
                 message="Como deseja proceder?",
                 choices=[
-                    Choice("auto", "✅ Aplicar configuração automática"),
-                    Choice("edit", "✏️  Editar configuração antes de aplicar"),
-                    Choice("manual", "🔧 Configurar tudo manualmente"),
-                    Choice("cancel", "🚫 Cancelar")
+                    Choice("auto", "[Auto] Aplicar configuração automática"),
+                    Choice("edit", "[Edit] Editar configuração antes de aplicar"),
+                    Choice("manual", "[Manual] Configurar tudo manualmente"),
+                    Choice("cancel", "[Cancel] Cancelar")
                 ]
             ).execute()
 
@@ -869,9 +879,9 @@ class InteractiveInterface:
             elif config_action == "manual":
                 self._manual_config_from_statuses(status_manager, available_statuses)
             else:
-                print("🚫 Configuração cancelada")
+                print("Configuração cancelada")
         else:
-            print("\n⚠️  Não foi possível mapear automaticamente")
+            print("\nNão foi possível mapear automaticamente")
             if inquirer.confirm("Deseja configurar manualmente?", default=True).execute():
                 self._manual_config_from_statuses(status_manager, available_statuses)
             else:
@@ -886,27 +896,27 @@ class InteractiveInterface:
         if 'todo' in found_statuses and 'in_progress' in found_statuses:
             rules['rules']['on_work_start']['from_status'] = [found_statuses['todo']]
             rules['rules']['on_work_start']['to_status'] = found_statuses['in_progress']
-            print(f"✅ Configurado início: {found_statuses['todo']} → {found_statuses['in_progress']}")
+            print(f"Configurado início: {found_statuses['todo']} -> {found_statuses['in_progress']}")
 
         if 'in_progress' in found_statuses and 'done' in found_statuses:
             rules['rules']['on_work_complete']['from_status'] = [found_statuses['in_progress']]
             rules['rules']['on_work_complete']['to_status'] = found_statuses['done']
-            print(f"✅ Configurado fim: {found_statuses['in_progress']} → {found_statuses['done']}")
+            print(f"Configurado fim: {found_statuses['in_progress']} -> {found_statuses['done']}")
 
         # Habilita automação
         rules['enabled'] = True
         status_manager.save_status_rules(rules)
-        print("💾 Configuração salva e automação habilitada!")
+        print("Configuração salva e automação habilitada!")
 
     def _edit_and_apply_config(self, status_manager, found_statuses, available_statuses):
         """Permite editar a configuração antes de aplicar."""
-        print("\n✏️  Editando configuração...")
+        print("\nEditando configuração...")
 
         # Cria mapeamento editável
         config_mapping = {}
 
         # Configura regra de início de trabalho
-        print("\n🚀 Configurando regra: Início de Trabalho")
+        print("\nConfigurando regra: Início de Trabalho")
         print("Quando você entra em um repositório, de qual status para qual status a issue deve ir?")
 
         from_status_start = self._select_status_from_list(
@@ -930,7 +940,7 @@ class InteractiveInterface:
 
         # Configura regra de primeiro commit (opcional)
         if inquirer.confirm("Deseja configurar mudança de status no primeiro commit?", default=False).execute():
-            print("\n📝 Configurando regra: Primeiro Commit")
+            print("\nConfigurando regra: Primeiro Commit")
 
             from_status_commit = self._select_status_from_list(
                 available_statuses,
@@ -953,7 +963,7 @@ class InteractiveInterface:
 
         # Configura regra de finalização (opcional)
         if inquirer.confirm("Deseja configurar mudança de status ao finalizar trabalho?", default=False).execute():
-            print("\n🏁 Configurando regra: Finalização de Trabalho")
+            print("\nConfigurando regra: Finalização de Trabalho")
 
             from_status_complete = self._select_status_from_list(
                 available_statuses,
@@ -978,15 +988,39 @@ class InteractiveInterface:
         if config_mapping:
             self._apply_custom_config(status_manager, config_mapping)
         else:
-            print("⚠️  Nenhuma configuração foi definida")
+            print("Nenhuma configuração foi definida")
 
     def _select_status_from_list(self, available_statuses, message, default_status=None):
         """Permite selecionar um status de uma lista."""
         choices = [Choice(status, status) for status in available_statuses]
-        choices.append(Choice(None, "❌ Não configurar"))
+        choices.append(Choice(None, "[X] Não configurar"))
 
         # Define o padrão se fornecido
         default_choice = default_status if default_status in available_statuses else None
+
+        selected = inquirer.select(
+            message=message,
+            choices=choices,
+            default=default_choice
+        ).execute()
+
+        return selected
+
+    def _apply_custom_config(self, status_manager, config_mapping):
+        """Aplica configuração customizada."""
+        rules = status_manager.status_rules.copy()
+
+        for rule_name, config in config_mapping.items():
+            if rule_name in rules['rules']:
+                rules['rules'][rule_name]['from_status'] = [config['from']]
+                rules['rules'][rule_name]['to_status'] = config['to']
+                rules['rules'][rule_name]['enabled'] = config['enabled']
+                print(f"Configurado {rule_name}: {config['from']} -> {config['to']}")
+
+        # Habilita automação geral
+        rules['enabled'] = True
+        status_manager.save_status_rules(rules)
+        print("Configuração customizada salva e automação habilitada!")
 
         selected = inquirer.select(
             message=message,
