@@ -121,9 +121,9 @@ systemctl --user daemon-reload
 log_info "Habilitando serviço dev-peace..."
 systemctl --user enable dev-peace.service
 
-log_success "✅ Serviço Dev Peace instalado com sucesso!"
+log_success " Serviço Dev Peace instalado com sucesso!"
 echo
-log_info "📋 Comandos úteis:"
+log_info " Comandos úteis:"
 echo "  • Iniciar serviço:    systemctl --user start dev-peace"
 echo "  • Parar serviço:      systemctl --user stop dev-peace"
 echo "  • Status do serviço:  systemctl --user status dev-peace"
@@ -131,11 +131,11 @@ echo "  • Ver logs:           journalctl --user -u dev-peace -f"
 echo "  • Reiniciar serviço:  systemctl --user restart dev-peace"
 echo "  • Desabilitar:        systemctl --user disable dev-peace"
 echo
-log_info "🔧 Para iniciar automaticamente no boot:"
+log_info " Para iniciar automaticamente no boot:"
 echo "  sudo loginctl enable-linger $USER"
 echo
-log_warning "⚠️  Lembre-se de configurar o Jira antes de iniciar:"
+log_warning "  Lembre-se de configurar o Jira antes de iniciar:"
 echo "  dev-peace config --jira-url <url> --jira-user <user> --jira-token <token>"
 echo
-log_info "🚀 Para iniciar o serviço agora:"
+log_info " Para iniciar o serviço agora:"
 echo "  systemctl --user start dev-peace"

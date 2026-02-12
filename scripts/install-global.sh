@@ -78,7 +78,7 @@ fi
 
 # Verifica se ~/.local/bin está no PATH
 if [[ ":$PATH:" != *":$LOCAL_BIN:"* ]]; then
-    log_warning "⚠️  $LOCAL_BIN não está no PATH"
+    log_warning "  $LOCAL_BIN não está no PATH"
     
     # Detecta shell do usuário
     USER_SHELL=$(basename "$SHELL")
@@ -121,7 +121,7 @@ if [[ ":$PATH:" != *":$LOCAL_BIN:"* ]]; then
         log_warning "echo 'export PATH=\"$LOCAL_BIN:\$PATH\"' >> $SHELL_RC"
     fi
 else
-    log_success "✅ $LOCAL_BIN já está no PATH"
+    log_success " $LOCAL_BIN já está no PATH"
 fi
 
 # Testa o comando
@@ -131,32 +131,32 @@ log_info "🧪 Testando comando global..."
 export PATH="$LOCAL_BIN:$PATH"
 
 if command -v dev-peace >/dev/null 2>&1; then
-    log_success "✅ Comando 'dev-peace' disponível globalmente!"
+    log_success " Comando 'dev-peace' disponível globalmente!"
     
     # Testa execução
     log_info "Testando execução..."
     if dev-peace --version >/dev/null 2>&1; then
-        log_success "✅ Comando executando corretamente!"
+        log_success " Comando executando corretamente!"
     else
-        log_warning "⚠️  Comando encontrado mas pode ter problemas de execução"
+        log_warning "  Comando encontrado mas pode ter problemas de execução"
     fi
 else
-    log_error "❌ Comando 'dev-peace' não encontrado no PATH"
+    log_error " Comando 'dev-peace' não encontrado no PATH"
     log_error "Verifique se $LOCAL_BIN está no seu PATH"
 fi
 
 echo
 log_success "🎉 Instalação global concluída!"
 echo
-log_info "📋 Como usar:"
+log_info " Como usar:"
 log_info "  • dev-peace --help          - Ver ajuda"
 log_info "  • dev-peace status          - Ver status"
 log_info "  • dev-peace interactive     - Interface interativa"
 log_info "  • dev-peace config --show   - Ver configurações"
 echo
-log_info "🔧 Se o comando não funcionar:"
+log_info " Se o comando não funcionar:"
 log_info "  • Abra um novo terminal"
 log_info "  • Ou execute: source $SHELL_RC"
 log_info "  • Ou adicione manualmente ao PATH: export PATH=\"$LOCAL_BIN:\$PATH\""
 echo
-log_info "🚀 Agora você pode usar 'dev-peace' de qualquer diretório!"
+log_info " Agora você pode usar 'dev-peace' de qualquer diretório!"

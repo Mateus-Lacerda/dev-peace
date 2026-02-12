@@ -75,15 +75,15 @@ echo "No Linux (systemd):   systemctl --user stop dev-peace"
 echo "No macOS (launchd):   launchctl unload ~/Library/LaunchAgents/com.devpeace.daemon.plist"
 
 echo
-echo -e "${GREEN}✅ Exemplo completo!${NC}"
+echo -e "${GREEN} Exemplo completo!${NC}"
 echo
-echo -e "${BLUE}📋 Fluxo típico de uso:${NC}"
+echo -e "${BLUE} Fluxo típico de uso:${NC}"
 echo "1. Configure o Jira uma vez"
 echo "2. Adicione seus repositórios"
 echo "3. Configure automação de status"
 echo "4. Inicie o serviço"
 echo "5. Trabalhe normalmente - Dev Peace cuida do resto!"
 echo
-echo -e "${BLUE}🔍 Para debug:${NC}"
+echo -e "${BLUE} Para debug:${NC}"
 echo "No Linux: journalctl --user -u dev-peace --since '1 hour ago'"
 echo "No macOS: tail -n 100 ~/Library/Logs/dev-peace/stdout.log"

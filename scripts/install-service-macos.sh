@@ -135,15 +135,15 @@ log_info "Carregando o serviço com launchctl..."
 launchctl unload "$PLIST_FILE" 2>/dev/null || true
 launchctl load "$PLIST_FILE"
 
-log_success "✅ Serviço Dev Peace instalado e carregado com sucesso!"
+log_success " Serviço Dev Peace instalado e carregado com sucesso!"
 echo
-log_info "📋 Comandos úteis no macOS:"
+log_info " Comandos úteis no macOS:"
 echo "  • Iniciar serviço:    launchctl load $PLIST_FILE"
 echo "  • Parar serviço:      launchctl unload $PLIST_FILE"
 echo "  • Ver logs:           tail -f $LOG_DIR/stdout.log"
 echo "  • Ver erros:          tail -f $LOG_DIR/stderr.log"
 echo
-log_warning "⚠️  Lembre-se de configurar o Jira antes de iniciar:"
+log_warning "  Lembre-se de configurar o Jira antes de iniciar:"
 echo "  dev-peace config --jira-url <url> --jira-user <user> --jira-token <token>"
 echo
-log_info "🚀 O serviço já foi iniciado e rodará automaticamente ao fazer login."
+log_info " O serviço já foi iniciado e rodará automaticamente ao fazer login."

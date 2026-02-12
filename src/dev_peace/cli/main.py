@@ -547,40 +547,15 @@ Que a paz esteja com seu código!
         if system == "Darwin":  # macOS
             log_file = Path.home() / "Library/Logs/dev-peace/stdout.log"
             if not log_file.exists():
-                print(f"❌ Arquivo de log não encontrado: {log_file}")
+                print(f"Arquivo de log não encontrado: {log_file}")
                 print("O serviço está rodando? Use 'make service' para instalar.")
                 return 1
             
-            print(f"📋 Seguindo logs em: {log_file}")
+            print(f"Seguindo logs em: {log_file}")
             print("Pressione Ctrl+C para sair\n")
             os.system(f"tail -f {log_file}")
         else:  # Linux (assume systemd)
-            print("📋 Seguindo logs via journalctl...")
-            print("Pressione Ctrl+C para sair\n")
-            os.system("journalctl --user -u dev-peace -f")
-        
-        return 0
-
-    def handle_logs(self, args):
-        """Mostra os logs do serviço."""
-        import platform
-        import os
-        from pathlib import Path
-
-        system = platform.system()
-        
-        if system == "Darwin":  # macOS
-            log_file = Path.home() / "Library/Logs/dev-peace/stdout.log"
-            if not log_file.exists():
-                print(f"❌ Arquivo de log não encontrado: {log_file}")
-                print("O serviço está rodando? Use 'make service' para instalar.")
-                return 1
-            
-            print(f"📋 Seguindo logs em: {log_file}")
-            print("Pressione Ctrl+C para sair\n")
-            os.system(f"tail -f {log_file}")
-        else:  # Linux (assume systemd)
-            print("📋 Seguindo logs via journalctl...")
+            print("Seguindo logs via journalctl...")
             print("Pressione Ctrl+C para sair\n")
             os.system("journalctl --user -u dev-peace -f")
         
@@ -736,14 +711,14 @@ Que a paz esteja com seu código!
         events = rules.get('events', {})
         for event_name, transitions in events.items():
             title = event_name.replace('on_', '').replace('_', ' ').title()
-            print(f"🔔 {title}:")
+            print(f"Evento {title}:")
             if not transitions:
                 print("   (Nenhuma regra configurada)")
             else:
                 for i, trans in enumerate(transitions, 1):
                     from_val = trans.get('from')
                     to_val = trans.get('to')
-                    print(f"   {i}. {from_val} ➡️  {to_val}")
+                    print(f"   {i}. {from_val} -> {to_val}")
             print()
 
         return 0

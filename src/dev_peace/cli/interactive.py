@@ -680,14 +680,14 @@ class InteractiveInterface:
             action = inquirer.select(
                 message="Configurar automação de status:",
                 choices=[
-                    Choice("show", "[Ver] Ver regras atuais"),
-                    Choice("enable", "[ON] Habilitar automação"),
-                    Choice("disable", "[OFF] Desabilitar automação"),
-                    Choice("configure", "[🎯] Configurar baseado no Jira"),
-                    Choice("rules", "[🔧] Gerenciar regras individuais"),
-                    Choice("reset", "[Reset] Resetar para padrões"),
+                    Choice("show",      "[Ver]     Ver regras atuais"),
+                    Choice("enable",    "[ON]      Habilitar automação"),
+                    Choice("disable",   "[OFF]     Desabilitar automação"),
+                    Choice("configure", "[Config]  Configurar baseado no Jira"),
+                    Choice("rules",     "[Regras]  Gerenciar regras individuais"),
+                    Choice("reset",     "[Reset]   Resetar para padrões"),
                     Separator(),
-                    Choice("back", "[Voltar] Voltar")
+                    Choice("back",      "[Voltar]  Voltar")
                 ]
             ).execute()
 
@@ -716,20 +716,20 @@ class InteractiveInterface:
         
         # Mostra configuração de reversão automática
         auto_revert = rules.get('auto_revert_on_session_end', False)
-        print(f"Reversão automática: {'🟢 Habilitada' if auto_revert else '🔴 Desabilitada'}")
+        print(f"Reversão automática: {'[Habilitada]' if auto_revert else '[Desabilitada]'}")
         print()
 
         events = rules.get('events', {})
         for event_name, transitions in events.items():
             title = event_name.replace('on_', '').replace('_', ' ').title()
-            print(f"🔔 {title}:")
+            print(f"Evento {title}:")
             if not transitions:
                 print("   (Nenhuma regra configurada)")
             else:
                 for i, trans in enumerate(transitions, 1):
                     from_val = trans.get('from')
                     to_val = trans.get('to')
-                    print(f"   {i}. {from_val} ➡️  {to_val}")
+                    print(f"   {i}. {from_val} -> {to_val}")
             print()
 
         input("Pressione Enter para continuar...")
@@ -805,7 +805,7 @@ class InteractiveInterface:
         statuses = self.jira_client.get_project_statuses(project_key)
 
         if not statuses:
-            print(f"Nenhum status encontrado para {project_key}")
+            print(f"Nenhum status encontrado for {project_key}")
             input("Pressione Enter para continuar...")
             return
 
@@ -909,13 +909,13 @@ class InteractiveInterface:
             rules['events']['on_work_start'] = [
                 {'from': found_statuses['todo'], 'to': found_statuses['in_progress']}
             ]
-            print(f"✅ Configurado início: {found_statuses['todo']} ➡️  {found_statuses['in_progress']}")
+            print(f"Configurado início: {found_statuses['todo']} -> {found_statuses['in_progress']}")
 
         if 'in_progress' in found_statuses and 'done' in found_statuses:
             rules['events']['on_work_complete'] = [
                 {'from': found_statuses['in_progress'], 'to': found_statuses['done']}
             ]
-            print(f"✅ Configurado fim: {found_statuses['in_progress']} ➡️  {found_statuses['done']}")
+            print(f"Configurado fim: {found_statuses['in_progress']} -> {found_statuses['done']}")
 
         # Habilita automação
         rules['enabled'] = True
@@ -1028,7 +1028,6 @@ class InteractiveInterface:
     def _apply_custom_config(self, status_manager, config_mapping):
         """Aplica configuração customizada."""
         rules = status_manager.status_rules.copy()
-
         if 'events' not in rules:
             rules['events'] = {'on_work_start': [], 'on_first_commit': [], 'on_work_complete': []}
 
@@ -1037,54 +1036,27 @@ class InteractiveInterface:
                 rules['events'][event_name] = [
                     {'from': config['from'], 'to': config['to']}
                 ]
-                print(f"✅ Configurado {event_name}: {config['from']} ➡️  {config['to']}")
-
+                print(f"Configurado {event_name}: {config['from']} -> {config['to']}")
 
         # Habilita automação geral
         rules['enabled'] = True
         status_manager.save_status_rules(rules)
         print("Configuração customizada salva e automação habilitada!")
 
-        selected = inquirer.select(
-            message=message,
-            choices=choices,
-            default=default_choice
-        ).execute()
-
-        return selected
-
-    def _apply_custom_config(self, status_manager, config_mapping):
-        """Aplica configuração customizada."""
-        rules = status_manager.status_rules.copy()
-        if 'events' not in rules:
-            rules['events'] = {'on_work_start': [], 'on_first_commit': [], 'on_work_complete': []}
-
-        for event_name, config in config_mapping.items():
-            if event_name in rules['events']:
-                rules['events'][event_name] = [
-                    {'from': config['from'], 'to': config['to']}
-                ]
-                print(f"✅ Configurado {event_name}: {config['from']} ➡️  {config['to']}")
-
-        # Habilita automação geral
-        rules['enabled'] = True
-        status_manager.save_status_rules(rules)
-        print("💾 Configuração customizada salva e automação habilitada!")
-
     def _manual_config_from_statuses(self, status_manager, available_statuses):
         """Configuração completamente manual."""
-        print("\n🔧 Configuração Manual Completa")
+        print("\nConfiguração Manual Completa")
         print("Vamos configurar as transições para cada evento...")
 
         while True:
             event_name = inquirer.select(
                 message="Selecione um evento para adicionar regras:",
                 choices=[
-                    Choice("on_work_start", "🚀 Início de Trabalho"),
-                    Choice("on_first_commit", "📝 Primeiro Commit"),
-                    Choice("on_work_complete", "🏁 Finalização de Trabalho"),
+                    Choice("on_work_start",    "[Start]     Início de Trabalho"),
+                    Choice("on_first_commit",  "[Commit]    Primeiro Commit"),
+                    Choice("on_work_complete", "[Complete]  Finalização de Trabalho"),
                     Separator(),
-                    Choice("done", "✅ Finalizar configuração")
+                    Choice("done",             "[OK]        Finalizar configuração")
                 ]
             ).execute()
 
@@ -1098,7 +1070,7 @@ class InteractiveInterface:
             rules = status_manager.status_rules.copy()
             rules['enabled'] = True
             status_manager.save_status_rules(rules)
-            print("💾 Automação habilitada!")
+            print("Automação habilitada!")
 
     def _manage_individual_rules(self, status_manager):
         """Gerencia regras individuais."""
@@ -1106,11 +1078,11 @@ class InteractiveInterface:
         events = rules.get('events', {})
 
         event_choices = [
-            Choice("on_work_start", "🚀 Início de Trabalho"),
-            Choice("on_first_commit", "📝 Primeiro Commit"),
-            Choice("on_work_complete", "🏁 Finalização de Trabalho"),
+            Choice("on_work_start",    "[Start]     Início de Trabalho"),
+            Choice("on_first_commit",  "[Commit]    Primeiro Commit"),
+            Choice("on_work_complete", "[Complete]  Finalização de Trabalho"),
             Separator(),
-            Choice("back", "⬅️  Voltar")
+            Choice("back",             "[Voltar]    Voltar")
         ]
 
         selected_event = inquirer.select(
@@ -1130,16 +1102,16 @@ class InteractiveInterface:
             transitions = rules.get('events', {}).get(event_name, [])
             
             title = event_name.replace('on_', '').replace('_', ' ').title()
-            print(f"\n🔧 Gerenciando: {title}")
+            print(f"\nGerenciando: {title}")
             
             choices = []
             if transitions:
                 for i, trans in enumerate(transitions):
-                    choices.append(Choice(i, f"❌ Remover: {trans['from']} ➡️  {trans['to']}"))
+                    choices.append(Choice(i, f"[Remover]  {trans['from']} -> {trans['to']}"))
                 choices.append(Separator())
             
-            choices.append(Choice("add", "➕ Adicionar nova transição"))
-            choices.append(Choice("back", "⬅️  Voltar"))
+            choices.append(Choice("add",  "[Add]      Adicionar nova transição"))
+            choices.append(Choice("back", "[Voltar]   Voltar"))
 
             action = inquirer.select(
                 message="Selecione uma ação:",
@@ -1155,7 +1127,7 @@ class InteractiveInterface:
                 idx = int(action)
                 removed = transitions.pop(idx)
                 status_manager.save_status_rules(rules)
-                print(f"✅ Transição removida: {removed['from']} ➡️  {removed['to']}")
+                print(f"Transição removida: {removed['from']} -> {removed['to']}")
 
     def _add_transition_to_event(self, status_manager, event_name):
         """Adiciona uma nova transição a um evento com filtragem por projeto."""
@@ -1170,17 +1142,17 @@ class InteractiveInterface:
                     self.jira_client = temp_jira
 
         if not self.jira_client or not self.jira_client.is_connected():
-            print("\n❌ Jira não está conectado. Configure as credenciais primeiro.")
+            print("\nJira não está conectado. Configure as credenciais primeiro.")
             input("Pressione Enter para continuar...")
             return
 
         # 1. Seleção de Projeto para filtrar status
-        print("\n🔍 Buscando projetos...")
+        print("\nBuscando projetos...")
         projects = self.jira_client.get_projects()
         
-        project_choices = [Choice("all", "🌐 Todos os Status (Global)")]
+        project_choices = [Choice("all", "[Global]  Todos os Status (Global)")]
         for p in projects:
-            project_choices.append(Choice(p['key'], f"🏗️  {p['key']} - {p['name']}"))
+            project_choices.append(Choice(p['key'], f"[{p['key']}]  {p['name']}"))
         
         selected_project = inquirer.select(
             message="Filtrar status de qual projeto?",
@@ -1190,14 +1162,14 @@ class InteractiveInterface:
 
         # 2. Busca de Status baseada no projeto
         if selected_project == "all":
-            print("🔍 Buscando todos os status globais...")
+            print("Buscando todos os status globais...")
             available_statuses = self.jira_client.get_all_statuses()
         else:
-            print(f"🔍 Buscando status do projeto {selected_project}...")
+            print(f"Buscando status do projeto {selected_project}...")
             available_statuses = self.jira_client.get_project_statuses(selected_project)
 
         if not available_statuses:
-            print("⚠️  Nenhum status encontrado.")
+            print("Aviso: Nenhum status encontrado.")
             if not inquirer.confirm("Deseja digitar manualmente?", default=True).execute():
                 return
 
@@ -1205,7 +1177,7 @@ class InteractiveInterface:
             if available_statuses:
                 choice = inquirer.select(
                     message=message,
-                    choices=[Choice(s, s) for s in available_statuses] + [Choice("custom", "✏️  Digitar manualmente...")]
+                    choices=[Choice(s, s) for s in available_statuses] + [Choice("custom", "[Manual]  Digitar manualmente...")]
                 ).execute()
                 
                 if choice == "custom":
@@ -1234,14 +1206,14 @@ class InteractiveInterface:
             })
             
             status_manager.save_status_rules(rules)
-            print(f"✅ Nova regra adicionada: {from_status} ➡️  {to_status}")
+            print(f"Nova regra adicionada: {from_status} -> {to_status}")
 
     def _reset_automation_rules(self, status_manager):
         """Reseta regras para os padrões."""
-        if inquirer.confirm("⚠️  Tem certeza que deseja resetar todas as regras?", default=False).execute():
+        if inquirer.confirm("Aviso: Tem certeza que deseja resetar todas as regras?", default=False).execute():
             status_manager.reset_to_defaults()
-            print("🔄 Regras resetadas para os padrões!")
+            print("Regras resetadas para os padrões!")
         else:
-            print("🚫 Reset cancelado")
+            print("Reset cancelado")
 
         input("Pressione Enter para continuar...")
